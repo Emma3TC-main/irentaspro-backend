@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: irentaspro
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration
+
+server:
+  port: 8080
+
+logging:
+  level:
+    org.springframework: INFO
