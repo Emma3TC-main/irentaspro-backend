@@ -1,10 +1,10 @@
-package com.irentaspro.compl.domain.model;
+package com.irentaspro.iam.domain.model.valueobject;
 
-public class HashEvidencia {
+public class PasswordHash {
     private final String valor;
     private final String algoritmo;
 
-    public HashEvidencia(String valor, String algoritmo) {
+    public PasswordHash(String valor, String algoritmo) {
         this.valor = valor;
         this.algoritmo = algoritmo;
     }
@@ -15,10 +15,5 @@ public class HashEvidencia {
 
     public String getAlgoritmo() {
         return algoritmo;
-    }
-
-    @Override
-    public String toString() {
-        return algoritmo + ":" + valor;
     }
 }
