@@ -18,7 +18,7 @@ class IrentasproApplicationTests {
     @Test
     void probarConexionSupabase() throws Exception {
         try (Connection connection = dataSource.getConnection()) {
-            System.out.println("✅ Conexión exitosa a Supabase: " + connection.getMetaData().getURL());
+            System.out.println("✅ Conexión exitosa a BD: " + connection.getMetaData().getURL());
             assertNotNull(connection);
         } catch (Exception e) {
             System.err.println("❌ Error de conexión: " + e.getMessage());
