@@ -4,8 +4,8 @@ import com.irentaspro.common.domain.model.AggregateRoot;
 import com.irentaspro.iam.domain.model.valueobject.Email;
 import com.irentaspro.iam.domain.model.valueobject.PasswordHash;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -13,21 +13,56 @@ public class Usuario extends AggregateRoot {
     private String nombre;
     private Email email;
     private PasswordHash passwordHash;
-    private String tipoCuenta;
-    private Date fechaVencimiento;
+    private String tipoCuenta; // "free" o "premium"
+    private LocalDate fechaVencimiento;
     private List<Rol> roles = new ArrayList<>();
     private List<Sesion> sesiones = new ArrayList<>();
 
-    // Falta agregar inyección de dependencias y usar builder para crear instancias
+    public Usuario(String nombre, Email email, PasswordHash passwordHash) {
+        this.nombre = nombre;
+        this.email = email;
+        this.passwordHash = passwordHash;
+    }
+
+    public Usuario(UUID id, String nombre, Email email, PasswordHash passwordHash, String tipoCuenta,
+            LocalDate fechaVencimiento) {
+        this.id = id;
+        this.nombre = nombre;
+        this.email = email;
+        this.passwordHash = passwordHash;
+        this.tipoCuenta = tipoCuenta;
+        this.fechaVencimiento = fechaVencimiento;
+    }
+
+    /**
+     * 
+     * Constructor protegido vacío para frameworks de persistencia
+     * 
+     */
+
+    protected Usuario() {
+    }
 
     // Métodos de dominio y lógica de negocio aquí
-    public boolean autenticar(String credenciales) {
-        // Lógica de autenticación
-        return true; // Ejemplo simplificado
+    public boolean autenticar(String password) {
+        if (!passwordHash.verificar(password)) {
+            throw new IllegalArgumentException("Contraseña incorrecta");
+        }
+        return true;
     }
 
     public void cambiarPassword(String nuevaPassword) {
-        // Lógica para cambiar la contraseña
+        this.passwordHash = PasswordHash.crearDesdeTexto(nuevaPassword);
+    }
+
+    public void agregarRol(Rol rol) {
+        if (!roles.contains(rol)) {
+            roles.add(rol);
+        }
+    }
+
+    public void agregarSesion(Sesion sesion) {
+        this.sesiones.add(sesion);
     }
 
     public boolean esPremium() {
@@ -41,9 +76,14 @@ public class Usuario extends AggregateRoot {
 
     @Override
     public void validarInvariantes() {
-        // Validaciones de invariantes del agregado Usuario
-        if (nombre == null || email == null) {
-            throw new IllegalStateException("El nombre y el email son obligatorios.");
+        if (nombre == null || nombre.isBlank()) {
+            throw new IllegalStateException("El nombre es obligatorio.");
+        }
+        if (email == null) {
+            throw new IllegalStateException("El email es obligatorio.");
+        }
+        if (passwordHash == null) {
+            throw new IllegalStateException("El password es obligatorio.");
         }
     }
 
@@ -81,14 +121,6 @@ public class Usuario extends AggregateRoot {
         this.tipoCuenta = tipoCuenta;
     }
 
-    public Date getFechaVencimiento() {
-        return fechaVencimiento;
-    }
-
-    public void setFechaVencimiento(Date fechaVencimiento) {
-        this.fechaVencimiento = fechaVencimiento;
-    }
-
     public List<Rol> getRoles() {
         return roles;
     }
@@ -103,6 +135,14 @@ public class Usuario extends AggregateRoot {
 
     public void setSesiones(List<Sesion> sesiones) {
         this.sesiones = sesiones;
+    }
+
+    public LocalDate getFechaVencimiento() {
+        return fechaVencimiento;
+    }
+
+    public void setFechaVencimiento(LocalDate fechaVencimiento) {
+        this.fechaVencimiento = fechaVencimiento;
     }
 
 }
