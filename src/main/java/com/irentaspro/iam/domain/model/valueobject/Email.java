@@ -19,4 +19,19 @@ public class Email {
     public String toString() {
         return valor;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (!(obj instanceof Email))
+            return false;
+        Email other = (Email) obj;
+        return valor.equalsIgnoreCase(other.valor);
+    }
+
+    @Override
+    public int hashCode() {
+        return valor.toLowerCase().hashCode();
+    }
 }
