@@ -23,7 +23,12 @@ public class AuthService implements ServiciosDominio {
 
     public boolean validateToken(String token) {
         // Lógica para validar el token
-        return false;
+        //...
+        //...
+
+        //Aplicando TDD, test ->  ValidarTokenCorrecto
+
+        return "TOKEN_GENERICO_VALIDO".equals(token);
     }
 
     @Override

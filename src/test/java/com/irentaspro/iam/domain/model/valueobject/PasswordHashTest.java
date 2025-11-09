@@ -50,8 +50,9 @@ class PasswordHashTest {
         //2. Act
         PasswordHash passwordHash = new PasswordHash(valor, algoritmo);
         //3. Assert
+        assertNotNull(passwordHash);
         assertEquals(valor, passwordHash.getValor());
         assertEquals(algoritmo, passwordHash.getAlgoritmo());
     }
-    
+
 }
