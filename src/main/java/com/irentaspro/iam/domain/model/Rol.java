@@ -13,9 +13,15 @@ public class Rol extends Entidad {
     // Lógica para asignar permisos , mejorar!
 
     public void asignarPermiso(String permiso) {
+        if(permiso == null || permiso.isBlank()){
+            //throw new  IllegalArgumentException ("La lista de permisos está vacia");
+            return;
+        }
+                
         if (!permisos.contains(permiso)) {
             permisos.add(permiso);
         }
+
     }
 
     // falta constructor
@@ -25,6 +31,8 @@ public class Rol extends Entidad {
     public String getNombre() {
         return nombre;
     }
+
+
 
     public void setNombre(String nombre) {
         this.nombre = nombre;
