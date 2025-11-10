@@ -1,6 +1,7 @@
 package com.irentaspro.bi.domain.repositories;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import com.irentaspro.bi.domain.model.Reporte;
@@ -15,7 +16,7 @@ public interface IReporteRepositorio extends Repositorio<Reporte> {
     Reporte guardar(Reporte reporte);
 
     @Override
-    Reporte buscarPorId(UUID id);
+    Optional buscarPorId(UUID id);
 
     @Override
     void eliminar(UUID id);

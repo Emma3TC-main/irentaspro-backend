@@ -5,8 +5,6 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Repository;
 import lombok.RequiredArgsConstructor;
-
-import com.irentaspro.bi.domain.model.Reporte;
 import com.irentaspro.iam.domain.model.Usuario;
 import com.irentaspro.iam.domain.model.valueobject.Email;
 import com.irentaspro.iam.domain.model.valueobject.PasswordHash;
@@ -42,19 +40,26 @@ public class AuthRepositorioImpl implements IAuthRepositorio {
 
     @Override
     public Optional<Usuario> buscarPorEmail(String email) {
-        return jpaRepository.findByEmail(email).map(this::toDomain);
+        return jpaRepository.findByEmail(email.trim().toLowerCase()) // 👈 normaliza email
+                .map(this::toDomain);
     }
 
     private Usuario toDomain(UsuarioEntity entity) {
-        return new Usuario(
+        Usuario usuario = new Usuario(
                 entity.getNombre(),
                 new Email(entity.getEmail()),
                 new PasswordHash(entity.getPasswordHash(), null));
+
+        usuario.setId(entity.getId());
+        usuario.setTipoCuenta(entity.getTipoCuenta());
+        usuario.setFechaVencimiento(entity.getFechaVencimiento());
+
+        return usuario;
     }
 
     @Override
-    public Reporte buscarPorId(UUID id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'buscarPorId'");
+    public Optional<Usuario> buscarPorId(UUID id) {
+        return jpaRepository.findById(id).map(this::toDomain);
     }
+
 }

@@ -27,8 +27,10 @@ public class UsuarioEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     private String nombre;
-    @Column(unique = true)
+
+    @Column(unique = true, nullable = false)
     private String email;
+
     private String passwordHash;
     private String tipoCuenta;
     private LocalDate fechaVencimiento;

@@ -21,33 +21,66 @@ public class AuthApplicationService {
     private final UsuarioMapper mapper;
 
     public UsuarioDTO registrarUsuario(String nombre, String email, String password) {
+        // --- Limpieza y validación del correo ---
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("El correo electrónico no puede estar vacío");
+        }
+
+        // Normalizar (trim + lowercase)
+        email = email.trim().toLowerCase();
+
+        // Validar formato con expresión robusta
+        if (!email.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
+            throw new IllegalArgumentException("Formato de correo electrónico inválido");
+        }
+
+        // Evitar comas, espacios o caracteres extraños
+        if (email.contains(",") || email.contains(" ")) {
+            throw new IllegalArgumentException("El correo electrónico contiene caracteres inválidos");
+        }
+
+        // --- Verificar duplicado ---
+        authRepositorio.buscarPorEmail(email).ifPresent(u -> {
+            throw new IllegalArgumentException("El correo electrónico ya está registrado");
+        });
+
+        // --- Validación de la contraseña ---
         var policy = new PasswordPolicy();
         policy.validarComplejidad(password);
 
+        // --- Crear hash y entidad de dominio ---
         var passwordHash = PasswordHash.crearDesdeTexto(password);
-
         var usuario = new Usuario(nombre, new Email(email), passwordHash);
 
         usuario.validarInvariantes();
 
+        // --- Guardar en el repositorio ---
         authRepositorio.guardar(usuario);
+
+        // --- Devolver DTO ---
         return mapper.toDto(usuario);
     }
 
     public String autenticar(String email, String password) {
-        //Buscar usuario por email
+        // --- Limpieza y validación de email ---
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("Debe ingresar un correo electrónico válido");
+        }
+        email = email.trim().toLowerCase();
+
+        // --- Buscar usuario ---
         var usuario = authRepositorio.buscarPorEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
-        //Verificar password
+
+        // --- Verificar contraseña ---
         usuario.autenticar(password);
 
-        // Crear token y sesión
+        // --- Crear token JWT y registrar sesión ---
         var authService = new AuthService(authRepositorio, new PasswordPolicy());
         String token = authService.issueToken(usuario);
 
-        authService.registrarSesion(usuario, token); // Nueva función para registrar la sesión
+        authService.registrarSesion(usuario, token);
 
         return token;
     }
-
 }

@@ -9,7 +9,7 @@ import java.util.Optional;
 public interface Repositorio<T extends Entidad> {
     T guardar(T entidad);
 
-    Reporte buscarPorId(UUID id);
+    Optional<T> buscarPorId(UUID id);
 
     void eliminar(UUID id);
 }

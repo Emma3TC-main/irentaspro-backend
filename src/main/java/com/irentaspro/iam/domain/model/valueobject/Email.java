@@ -1,14 +1,27 @@
 package com.irentaspro.iam.domain.model.valueobject;
 
+/**
+ * Value Object que representa un correo electrónico válido dentro del dominio.
+ * Ejemplo válido: "usuario.ejemplo+1@test-domain.com"
+ */
 public class Email {
+
     private final String valor;
 
     public Email(String valor) {
-        // Validar formato de email (simplificado)
-        if (valor == null || !valor.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
-            throw new IllegalArgumentException("Formato de email inválido");
+        if (valor == null || valor.isBlank()) {
+            throw new IllegalArgumentException("El correo electrónico no puede estar vacío");
         }
-        this.valor = valor;
+
+        String email = valor.trim().toLowerCase();
+
+        if (!email.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
+            throw new IllegalArgumentException(
+                    "Formato de correo electrónico inválido: " + valor +
+                            ". Ejemplo válido: usuario.ejemplo@test.com");
+        }
+
+        this.valor = email;
     }
 
     public String getValor() {

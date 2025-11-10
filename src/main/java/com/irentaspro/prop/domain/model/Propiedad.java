@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import com.fasterxml.jackson.databind.annotation.JsonAppend.Prop;
 import com.irentaspro.common.domain.model.AggregateRoot;
+import com.irentaspro.prop.domain.model.valueobjects.Direccion;
 import com.irentaspro.prop.domain.model.valueobjects.Precio;
 import com.irentaspro.prop.domain.model.valueobjects.Ubicacion;
 
@@ -13,14 +13,14 @@ public class Propiedad extends AggregateRoot {
     private UUID ownerId;
     private String titulo;
     private String descripcion;
-    private String direccion;
+    private Direccion direccion;
     private Ubicacion ubicacion;
     private Precio precio;
     private List<DocumentoPropiedad> documentos = new ArrayList<>();
 
     // Constructor general, luego se usará inyección de dependencias y la capa de
     // applicación para crear instancias
-    public Propiedad(UUID ownerId, String titulo, String descripcion, String direccion, Ubicacion ubicacion,
+    public Propiedad(UUID ownerId, String titulo, String descripcion, Direccion direccion, Ubicacion ubicacion,
             Precio precio) {
         this.ownerId = ownerId;
         this.titulo = titulo;
@@ -73,10 +73,6 @@ public class Propiedad extends AggregateRoot {
         return descripcion;
     }
 
-    public String getDireccion() {
-        return direccion;
-    }
-
     public Ubicacion getUbicacion() {
         return ubicacion;
     }
@@ -103,10 +99,6 @@ public class Propiedad extends AggregateRoot {
         this.descripcion = descripcion;
     }
 
-    public void setDireccion(String direccion) {
-        this.direccion = direccion;
-    }
-
     public void setUbicacion(Ubicacion ubicacion) {
         this.ubicacion = ubicacion;
     }
@@ -117,6 +109,14 @@ public class Propiedad extends AggregateRoot {
 
     public void setDocumentos(List<DocumentoPropiedad> documentos) {
         this.documentos = documentos;
+    }
+
+    public Direccion getDireccion() {
+        return direccion;
+    }
+
+    public void setDireccion(Direccion direccion) {
+        this.direccion = direccion;
     }
 
 }

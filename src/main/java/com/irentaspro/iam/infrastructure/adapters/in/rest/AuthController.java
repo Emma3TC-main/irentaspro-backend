@@ -1,15 +1,11 @@
 package com.irentaspro.iam.infrastructure.adapters.in.rest;
 
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import com.irentaspro.iam.application.dto.UsuarioDTO;
 import com.irentaspro.iam.application.service.AuthApplicationService;
-import com.irentaspro.iam.domain.model.Usuario;
-import com.irentaspro.iam.domain.services.AuthService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -20,16 +16,26 @@ public class AuthController {
 
     private final AuthApplicationService authApplicationService;
 
+    /**
+     * Registro de usuario
+     */
     @PostMapping("/register")
-    public UsuarioDTO register(@RequestParam String nombre,
+    public ResponseEntity<UsuarioDTO> register(
+            @RequestParam String nombre,
             @RequestParam String email,
             @RequestParam String password) {
-        return authApplicationService.registrarUsuario(nombre, email, password);
+        UsuarioDTO usuario = authApplicationService.registrarUsuario(nombre, email, password);
+        return ResponseEntity.status(HttpStatus.CREATED).body(usuario);
     }
 
+    /**
+     * Autenticación de usuario
+     */
     @PostMapping("/login")
-    public String login(@RequestParam String email,
+    public ResponseEntity<String> login(
+            @RequestParam String email,
             @RequestParam String password) {
-        return authApplicationService.autenticar(email, password);
+        String token = authApplicationService.autenticar(email, password);
+        return ResponseEntity.ok(token);
     }
 }

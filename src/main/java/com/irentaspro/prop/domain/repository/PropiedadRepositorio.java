@@ -7,5 +7,5 @@ import com.irentaspro.common.domain.model.Repositorio;
 import com.irentaspro.prop.domain.model.Propiedad;
 
 public interface PropiedadRepositorio extends Repositorio<Propiedad> {
-    List<Propiedad> buscarPorPropietario(UUID ownerId);
+    List<Propiedad> findByOwnerId(UUID ownerId);
 }
