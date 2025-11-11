@@ -4,7 +4,13 @@ import java.time.LocalDate;
 
 import com.irentaspro.common.domain.model.Entidad;
 
+/**
+ * Representa una solicitud ARCO (Acceso, Rectificación, Cancelación u
+ * Oposición)
+ * realizada por un titular de datos personales.
+ */
 public class SolicitudARCO extends Entidad {
+
     public enum TipoSolicitud {
         ACCESO, RECTIFICACION, CANCELACION, OPOSICION
     }
@@ -14,21 +20,24 @@ public class SolicitudARCO extends Entidad {
     private String estado;
     private String respuesta;
 
-    public SolicitudARCO(TipoSolicitud tipoSolicitud, LocalDate fecha, String estado, String respuesta) {
+    public SolicitudARCO(TipoSolicitud tipoSolicitud) {
+        super();
         this.tipoSolicitud = tipoSolicitud;
-        this.fecha = fecha;
-        this.estado = estado;
-        this.respuesta = respuesta;
-    }
-
-    public void registrar() {
         this.fecha = LocalDate.now();
         this.estado = "registrada";
+        this.respuesta = null;
+        validarInvariantes();
     }
 
     public void responder(String respuesta) {
         this.respuesta = respuesta;
         this.estado = "respondida";
+    }
+
+    @Override
+    public void validarInvariantes() {
+        if (tipoSolicitud == null)
+            throw new IllegalArgumentException("El tipo de solicitud no puede ser nulo.");
     }
 
     // Getters

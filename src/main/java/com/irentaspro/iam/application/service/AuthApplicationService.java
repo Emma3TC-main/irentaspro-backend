@@ -30,6 +30,7 @@ public class AuthApplicationService {
         email = email.trim().toLowerCase();
 
         // Validar formato con expresión robusta
+
         if (!email.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
             throw new IllegalArgumentException("Formato de correo electrónico inválido");
         }
@@ -62,25 +63,18 @@ public class AuthApplicationService {
     }
 
     public String autenticar(String email, String password) {
-        // --- Limpieza y validación de email ---
         if (email == null || email.isBlank()) {
             throw new IllegalArgumentException("Debe ingresar un correo electrónico válido");
         }
         email = email.trim().toLowerCase();
 
-        // --- Buscar usuario ---
         var usuario = authRepositorio.buscarPorEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
 
-        // --- Verificar contraseña ---
         usuario.autenticar(password);
 
-        // --- Crear token JWT y registrar sesión ---
         var authService = new AuthService(authRepositorio, new PasswordPolicy());
-        String token = authService.issueToken(usuario);
-
-        authService.registrarSesion(usuario, token);
-
-        return token;
+        return authService.issueToken(usuario);
     }
+
 }
