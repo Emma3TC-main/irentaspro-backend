@@ -3,9 +3,9 @@ spring:
     name: irentaspro
 
   datasource:
-    url: jdbc:postgresql://pg-3753d7be-irentaspro.f.aivencloud.com:11827/defaultdb?sslmode=require
+    url: jdbc:postgresql://pg-3753d7be-irentaspro.f.aivencloud.com:11827/irentaspro?sslmode=require
     username: avnadmin
-    password: PLACEHOLDER
+    password: REDACTED
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 5

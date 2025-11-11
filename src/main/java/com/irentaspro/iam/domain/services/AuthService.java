@@ -60,14 +60,12 @@ public class AuthService implements ServiciosDominio {
         }
     }
 
-
     /**
      * Registra una sesión activa para el usuario
      */
     public void registrarSesion(Usuario usuario, String token) {
         Sesion sesion = new Sesion(token, LocalDateTime.now().plusHours(1));
         usuario.getSesiones().add(sesion);
-        authRepositorio.guardar(usuario);
     }
 
     @Override

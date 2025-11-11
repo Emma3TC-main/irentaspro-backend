@@ -4,49 +4,40 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-@ControllerAdvice
+@RestControllerAdvice
 public class GlobalExceptionHandler {
-    /**
-     * Maneja errores de validación de negocio o argumentos inválidos
-     */
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex) {
-        HttpStatus status = HttpStatus.BAD_REQUEST;
-
-        String msg = ex.getMessage().toLowerCase();
-        if (msg.contains("no encontrado")) {
-            status = HttpStatus.NOT_FOUND;
-        } else if (msg.contains("contraseña") || msg.contains("password")) {
-            status = HttpStatus.UNAUTHORIZED;
-        } else if (msg.contains("registrado")) {
-            status = HttpStatus.CONFLICT; // conflicto: recurso duplicado
-        }
-
-        return buildErrorResponse(status, ex.getMessage());
+        return ResponseEntity.badRequest().body(Map.of(
+                "error", "Bad Request",
+                "message", ex.getMessage(),
+                "status", 400,
+                "timestamp", LocalDateTime.now()));
     }
 
-    /**
-     * Cualquier otro error inesperado
-     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, Object>> handleDataIntegrity(DataIntegrityViolationException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
+                "error", "Conflict",
+                "message", "El correo electrónico ya está registrado",
+                "status", 409,
+                "timestamp", LocalDateTime.now()));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneral(Exception ex) {
-        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Error interno del servidor");
-    }
-
-    /**
-     * Construye el cuerpo de la respuesta de error
-     */
-    private ResponseEntity<Map<String, Object>> buildErrorResponse(HttpStatus status, String message) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("status", status.value());
-        body.put("error", status.getReasonPhrase());
-        body.put("message", message);
-        return ResponseEntity.status(status).body(body);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                "error", "Internal Server Error",
+                "message", "Error interno del servidor",
+                "status", 500,
+                "timestamp", LocalDateTime.now()));
     }
 }

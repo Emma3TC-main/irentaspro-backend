@@ -1,20 +1,43 @@
 package com.irentaspro.pay.domain.model;
 
 import java.util.UUID;
-
 import com.irentaspro.common.domain.model.Entidad;
 
+/**
+ * Entidad de dominio: ComprobanteFiscal
+ * Representa un comprobante fiscal (boleta, factura, etc.) emitido tras la
+ * confirmación de un pago.
+ * Es una entidad del dominio asociada a un Pago.
+ */
 public class ComprobanteFiscal extends Entidad {
-    private String tipo; // Factura, boleta, etc.
-    private String xml; // Representación XML CPE
-    private String ticketSUNAT; // Identificador fiscal
 
+    private final String tipo; // Ejemplo: "Boleta", "Factura"
+    private final String xml; // Representación XML del comprobante (CPE)
+    private final String ticketSUNAT; // Identificador fiscal asignado por SUNAT
+
+    /**
+     * Constructor principal: crea un nuevo comprobante fiscal.
+     */
     public ComprobanteFiscal(String tipo, String xml, String ticketSUNAT) {
+        super(); // genera UUID automáticamente desde la clase base Entidad
         this.tipo = tipo;
         this.xml = xml;
         this.ticketSUNAT = ticketSUNAT;
+        validarInvariantes();
     }
 
+    /**
+     * Constructor utilizado para reconstrucción desde persistencia.
+     */
+    public ComprobanteFiscal(UUID id, String tipo, String xml, String ticketSUNAT) {
+        super(id);
+        this.tipo = tipo;
+        this.xml = xml;
+        this.ticketSUNAT = ticketSUNAT;
+        validarInvariantes();
+    }
+
+    // --- Getters ---
     public String getTipo() {
         return tipo;
     }
@@ -25,5 +48,19 @@ public class ComprobanteFiscal extends Entidad {
 
     public String getTicketSUNAT() {
         return ticketSUNAT;
+    }
+
+    // --- Validación de invariantes ---
+    @Override
+    public void validarInvariantes() {
+        if (tipo == null || tipo.isBlank()) {
+            throw new IllegalArgumentException("El tipo de comprobante no puede estar vacío.");
+        }
+        if (ticketSUNAT == null || ticketSUNAT.isBlank()) {
+            throw new IllegalArgumentException("El ticket SUNAT es obligatorio.");
+        }
+        if (xml == null || xml.isBlank()) {
+            throw new IllegalArgumentException("El XML del comprobante no puede estar vacío.");
+        }
     }
 }

@@ -4,8 +4,17 @@ import java.util.UUID;
 
 import com.irentaspro.common.domain.model.AggregateRoot;
 import com.irentaspro.common.domain.model.valueobjects.Monto;
+import com.irentaspro.pay.domain.events.ComprobanteEmitido;
+import com.irentaspro.pay.domain.events.PagoConciliado;
+import com.irentaspro.pay.domain.events.PagoConfirmado;
 
+/**
+ * Entidad de dominio: Pago
+ * Representa un pago asociado a un contrato o membresía.
+ * Implementa la lógica de negocio y emite eventos de dominio.
+ */
 public class Pago extends AggregateRoot {
+
     private UUID contratoId;
     private UUID usuarioId;
     private Monto monto;
@@ -15,15 +24,41 @@ public class Pago extends AggregateRoot {
     private String referenciaExterna;
     private ComprobanteFiscal comprobanteFiscal;
 
+    // --- Constructores de dominio ---
     public Pago(UUID contratoId, UUID usuarioId, Monto monto, String metodo, String tipoPago, String estado) {
+        this.id = UUID.randomUUID();
         this.contratoId = contratoId;
         this.usuarioId = usuarioId;
         this.monto = monto;
         this.metodo = metodo;
         this.tipoPago = tipoPago;
         this.estado = estado;
+        this.validarInvariantes();
     }
 
+    /**
+     * Constructor completo utilizado al rehidratar desde persistencia.
+     */
+    public Pago(UUID id, UUID contratoId, UUID usuarioId, Monto monto,
+            String metodo, String tipoPago, String estado, String referenciaExterna) {
+        this.id = id;
+        this.contratoId = contratoId;
+        this.usuarioId = usuarioId;
+        this.monto = monto;
+        this.metodo = metodo;
+        this.tipoPago = tipoPago;
+        this.estado = estado;
+        this.referenciaExterna = referenciaExterna;
+        this.validarInvariantes();
+    }
+
+    /**
+     * Constructor protegido vacío para frameworks ORM.
+     */
+    protected Pago() {
+    }
+
+    // --- Lógica de negocio ---
     public void registrar() {
         if (monto == null || monto.valor().doubleValue() <= 0)
             throw new IllegalArgumentException("El monto debe ser positivo.");
@@ -31,18 +66,27 @@ public class Pago extends AggregateRoot {
     }
 
     public void confirmar() {
-        if (!"registrado".equals(this.estado))
+        if (!"registrado".equalsIgnoreCase(this.estado))
             throw new IllegalStateException("El pago debe estar registrado antes de confirmarse.");
         this.estado = "confirmado";
+        this.registrarEvento(new PagoConfirmado(this.getId(), this.usuarioId, this.tipoPago));
+    }
+
+    public void generarComprobante(ComprobanteFiscal cf) {
+        if (!"confirmado".equalsIgnoreCase(this.estado))
+            throw new IllegalStateException("Debe confirmarse el pago antes de generar un comprobante.");
+        this.comprobanteFiscal = cf;
+        this.registrarEvento(new ComprobanteEmitido(this.getId(), cf.getTicketSUNAT()));
     }
 
     public void conciliar() {
-        if (!"confirmado".equals(this.estado))
+        if (!"confirmado".equalsIgnoreCase(this.estado))
             throw new IllegalStateException("El pago debe estar confirmado antes de conciliarse.");
         this.estado = "conciliado";
+        this.registrarEvento(new PagoConciliado(this.getId(), this.referenciaExterna));
     }
 
-    // Getters
+    // --- Getters ---
     public UUID getContratoId() {
         return contratoId;
     }
@@ -75,18 +119,16 @@ public class Pago extends AggregateRoot {
         return comprobanteFiscal;
     }
 
-    // Setters controlados
+    // --- Setters controlados ---
     public void asignarReferenciaExterna(String ref) {
         this.referenciaExterna = ref;
-    }
-
-    public void generarComprobante(ComprobanteFiscal cf) {
-        this.comprobanteFiscal = cf;
     }
 
     @Override
     public void validarInvariantes() {
         if (contratoId == null || usuarioId == null)
             throw new IllegalArgumentException("Contrato y usuario no pueden ser nulos.");
+        if (monto == null)
+            throw new IllegalArgumentException("El monto no puede ser nulo.");
     }
 }
