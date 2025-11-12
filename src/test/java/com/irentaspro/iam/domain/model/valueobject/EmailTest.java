@@ -3,6 +3,7 @@ package com.irentaspro.iam.domain.model.valueobject;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+
 class EmailTest {
     //Test Forzando Excepción
     @Test

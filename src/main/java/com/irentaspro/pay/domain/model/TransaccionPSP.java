@@ -10,6 +10,13 @@ public class TransaccionPSP extends Entidad {
     private Map<String, Object> payload;
 
     public TransaccionPSP(String provider, String ref, Map<String, Object> payload) {
+        if (provider == null || provider.isBlank()) {
+            throw new IllegalArgumentException("El provider no puede ser nulo o vacío.");
+        }
+        if (ref == null || ref.isBlank()) {
+            throw new IllegalArgumentException("La referencia no puede ser nula o vacía.");
+        }
+        
         this.provider = provider;
         this.ref = ref;
         this.payload = payload;
