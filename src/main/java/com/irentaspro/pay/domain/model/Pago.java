@@ -86,6 +86,12 @@ public class Pago extends AggregateRoot {
         this.registrarEvento(new PagoConciliado(this.getId(), this.referenciaExterna));
     }
 
+    // Método helper para verificar estado
+
+    public boolean estaConfirmado() {
+        return "confirmado".equalsIgnoreCase(this.estado);
+    }
+
     // --- Getters ---
     public UUID getContratoId() {
         return contratoId;

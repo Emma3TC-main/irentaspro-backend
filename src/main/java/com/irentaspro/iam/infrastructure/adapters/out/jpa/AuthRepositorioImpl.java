@@ -1,9 +1,13 @@
 package com.irentaspro.iam.infrastructure.adapters.out.jpa;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
 import lombok.RequiredArgsConstructor;
 import com.irentaspro.iam.domain.model.Usuario;
 import com.irentaspro.iam.domain.model.valueobject.Email;
@@ -13,6 +17,7 @@ import com.irentaspro.iam.infrastructure.entity.UsuarioEntity;
 import com.irentaspro.iam.infrastructure.repository.UsuarioJpaRepository;
 
 @Repository
+@Transactional
 @RequiredArgsConstructor
 public class AuthRepositorioImpl implements IAuthRepositorio {
 
@@ -60,6 +65,14 @@ public class AuthRepositorioImpl implements IAuthRepositorio {
     @Override
     public Optional<Usuario> buscarPorId(UUID id) {
         return jpaRepository.findById(id).map(this::toDomain);
+    }
+
+    @Override
+    public List<Usuario> buscarTodos() {
+        return jpaRepository.findAll()
+                .stream()
+                .map(this::toDomain)
+                .collect(Collectors.toList());
     }
 
 }

@@ -7,9 +7,10 @@ public class PeriodoContrato {
     private final LocalDate fin;
 
     public PeriodoContrato(LocalDate inicio, LocalDate fin) {
-        if (fin.isBefore(inicio)) {
-            throw new IllegalArgumentException("La fecha de fin no puede ser anterior a la fecha de inicio.");
-        }
+        if (inicio == null || fin == null)
+            throw new IllegalArgumentException("Las fechas de inicio y fin son obligatorias.");
+        if (fin.isBefore(inicio))
+            throw new IllegalArgumentException("La fecha de fin no puede ser anterior al inicio.");
         this.inicio = inicio;
         this.fin = fin;
     }
@@ -20,5 +21,10 @@ public class PeriodoContrato {
 
     public LocalDate getFin() {
         return fin;
+    }
+
+    @Override
+    public String toString() {
+        return inicio + " - " + fin;
     }
 }

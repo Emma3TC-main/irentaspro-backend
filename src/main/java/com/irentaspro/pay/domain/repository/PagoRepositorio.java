@@ -1,5 +1,6 @@
 package com.irentaspro.pay.domain.repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -16,6 +17,9 @@ public interface PagoRepositorio extends Repositorio<Pago> {
 
     @Override
     void eliminar(UUID id);
+
+    @Override
+    List<Pago> buscarTodos();
 
     // Métodos adicionales específicos del dominio PAY
     // Optional<Pago> buscarPorReferencia(String referencia);

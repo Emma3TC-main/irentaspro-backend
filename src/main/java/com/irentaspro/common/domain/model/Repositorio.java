@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import com.irentaspro.bi.domain.model.Reporte;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface Repositorio<T extends Entidad> {
@@ -12,4 +13,6 @@ public interface Repositorio<T extends Entidad> {
     Optional<T> buscarPorId(UUID id);
 
     void eliminar(UUID id);
+
+    List<T> buscarTodos();
 }

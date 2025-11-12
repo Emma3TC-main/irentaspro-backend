@@ -18,6 +18,7 @@ import com.irentaspro.prop.application.dto.PropiedadResponse;
 import com.irentaspro.prop.application.services.ActualizarPropiedadService;
 import com.irentaspro.prop.application.services.CrearPropiedadService;
 import com.irentaspro.prop.application.services.ListarPropiedadesService;
+import com.irentaspro.prop.application.services.ListarTodasPropiedadesService;
 
 @RestController
 @RequestMapping("/api/v1/propiedades")
@@ -30,13 +31,17 @@ public class PropiedadController {
 
     private final ListarPropiedadesService listarService;
 
+    private final ListarTodasPropiedadesService listarTodasService;
+
     public PropiedadController(
             CrearPropiedadService crearService,
             ActualizarPropiedadService actualizarService,
-            ListarPropiedadesService listarService) {
+            ListarPropiedadesService listarService,
+            ListarTodasPropiedadesService listarTodasService) {
         this.crearService = crearService;
         this.actualizarService = actualizarService;
         this.listarService = listarService;
+        this.listarTodasService = listarTodasService;
     }
 
     @PostMapping
@@ -57,6 +62,11 @@ public class PropiedadController {
     @GetMapping("/owner/{ownerId}")
     public ResponseEntity<List<PropiedadResponse>> listarPorOwner(@PathVariable UUID ownerId) {
         return ResponseEntity.ok(listarService.ejecutar(ownerId));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<PropiedadResponse>> listarTodas() {
+        return ResponseEntity.ok(listarTodasService.ejecutar());
     }
 
 }

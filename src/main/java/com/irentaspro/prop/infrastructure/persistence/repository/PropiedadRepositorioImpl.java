@@ -66,6 +66,15 @@ public class PropiedadRepositorioImpl implements PropiedadRepositorio {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<Propiedad> buscarTodos() {
+        return jpaRepo.findAll().stream().map(this::toDomain).collect(Collectors.toList());
+    }
+
+    /**
+     * Conversión de entidad persistente a modelo del dominio
+     */
+
     private Propiedad toDomain(PropiedadEntity e) {
         return new Propiedad(
                 e.getOwnerId(),

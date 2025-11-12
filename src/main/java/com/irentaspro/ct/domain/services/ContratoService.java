@@ -1,9 +1,22 @@
 package com.irentaspro.ct.domain.services;
 
-import com.irentaspro.common.domain.model.ServiciosDominio;
-import com.irentaspro.ct.domain.model.Contrato;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
-public class ContratoService implements ServiciosDominio {
+import org.springframework.stereotype.Service;
+
+import com.irentaspro.ct.domain.model.Contrato;
+import com.irentaspro.ct.domain.model.FirmaDigital;
+import com.irentaspro.common.domain.model.valueobjects.HashDocumento;
+
+/**
+ * Servicio de dominio para operaciones de negocio del agregado Contrato.
+ * 
+ * Encapsula la lógica de firma digital, delegando la integración
+ * a un adaptador (IFirmaAdapter).
+ */
+@Service
+public class ContratoService {
 
     private final IFirmaAdapter firmaAdapter;
 
@@ -11,17 +24,18 @@ public class ContratoService implements ServiciosDominio {
         this.firmaAdapter = firmaAdapter;
     }
 
-    public void firmar(Contrato contrato) {
-        var resultado = firmaAdapter.solicitarFirma(contrato);
-        contrato.firmar(resultado);
-    }
+    /**
+     * Firma digitalmente un contrato.
+     * Aplica las reglas de negocio del dominio y usa el adaptador de firma.
+     */
+    public void firmarContrato(Contrato contrato) {
+        // Se obtiene la firma desde el servicio externo (adaptador)
+        FirmaDigital firma = firmaAdapter.firmarDocumento(
+                contrato.getId(),
+                new HashDocumento("hash-simulacion-" + UUID.randomUUID(), "SHA-256")
+        );
 
-    public boolean validarEstado(Contrato contrato) {
-        return contrato.getEstado() != null && !contrato.getEstado().getEstado().isBlank();
-    }
-
-    @Override
-    public void ejecutar() {
-        // Método genérico de ejecución de servicio de dominio
+        // Se delega al agregado la validación del estado y la aplicación de la firma
+        contrato.firmar(firma);
     }
 }

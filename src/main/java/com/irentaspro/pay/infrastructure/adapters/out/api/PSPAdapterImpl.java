@@ -16,7 +16,7 @@ import com.irentaspro.pay.domain.services.PSP_ACL;
  * y un servicio externo (como Stripe, Niubiz, etc.).
  */
 @Component
-public class PSPAdapter implements IPSPAdapter {
+public class PSPAdapterImpl implements IPSPAdapter {
 
     private final PSP_ACL acl = new PSP_ACL();
 
@@ -30,11 +30,11 @@ public class PSPAdapter implements IPSPAdapter {
     public Map<String, Object> iniciarPago(Pago pago) {
         Map<String, Object> solicitud = acl.traducirSolicitud(pago);
 
-        // 🔹 Simulación: envío de la solicitud al PSP externo
+        // Simulación: envío de la solicitud al PSP externo
         System.out.println("[PSPAdapter] Enviando solicitud de pago al PSP...");
         System.out.println("[PSPAdapter] Payload: " + solicitud);
 
-        // 🔹 Simulación: respuesta del PSP
+        // Simulación: respuesta del PSP
         String ref = UUID.randomUUID().toString();
         Map<String, Object> respuesta = Map.of(
                 "status", "ok",

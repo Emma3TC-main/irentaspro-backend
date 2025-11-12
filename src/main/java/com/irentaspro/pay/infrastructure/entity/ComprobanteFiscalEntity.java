@@ -2,6 +2,7 @@ package com.irentaspro.pay.infrastructure.entity;
 
 import java.util.UUID;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -21,7 +22,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ComprobanteFiscalEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
+    @Column(columnDefinition = "uuid")
     private UUID id;
 
     private String tipo;
