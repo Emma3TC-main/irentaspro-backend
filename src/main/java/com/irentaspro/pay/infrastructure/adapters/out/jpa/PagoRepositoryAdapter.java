@@ -1,5 +1,6 @@
-package com.irentaspro.pay.infrastructure.adapters;
+package com.irentaspro.pay.infrastructure.adapters.out.jpa;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -69,6 +70,14 @@ public class PagoRepositoryAdapter implements PagoRepositorio {
         if (jpaRepo.existsById(id)) {
             jpaRepo.deleteById(id);
         }
+    }
+
+    @Override
+    public List<Pago> buscarTodos() {
+        return jpaRepo.findAll()
+                .stream()
+                .map(this::mapToDomain)
+                .toList();
     }
 
     // --- Métodos auxiliares ---

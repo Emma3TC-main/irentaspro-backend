@@ -2,22 +2,20 @@ package com.irentaspro.ct.domain.model;
 
 import java.util.List;
 import java.util.UUID;
-
 import com.irentaspro.common.domain.model.AggregateRoot;
 import com.irentaspro.common.domain.model.valueobjects.Monto;
 import com.irentaspro.ct.domain.model.valueobjects.EstadoContrato;
 import com.irentaspro.ct.domain.model.valueobjects.PeriodoContrato;
 
 public class Contrato extends AggregateRoot {
-    private UUID propiedadId;
-    private UUID inquilinoId;
+    private final UUID propiedadId;
+    private final UUID inquilinoId;
     private PeriodoContrato periodo;
-    private Monto monto;
+    private final Monto monto;
     private EstadoContrato estado;
-    private List<Clausula> clausulas;
+    private final List<Clausula> clausulas;
     private FirmaDigital firmaDigital;
 
-    // Constructor
     public Contrato(UUID propiedadId, UUID inquilinoId, PeriodoContrato periodo, Monto monto,
             List<Clausula> clausulas) {
         this.propiedadId = propiedadId;
@@ -26,16 +24,16 @@ public class Contrato extends AggregateRoot {
         this.monto = monto;
         this.clausulas = clausulas;
         this.estado = new EstadoContrato("BORRADOR");
+        validarInvariantes();
     }
 
-    // Método de negocio
+    // --- Métodos de negocio ---
     public void generarCalendarioPagos() {
-        // Lógica para generar el calendario de pagos basado en el periodo y monto
+        // TODO: Implementar en capa de aplicación o infraestructura
     }
 
     public void firmar(FirmaDigital firma) {
-        // Lógica para firmar el contrato digitalmente
-        if (this.estado.es("BORRADOR")) {
+        if (estado.es("BORRADOR")) {
             this.firmaDigital = firma;
             this.estado = new EstadoContrato("FIRMADO");
         } else {
@@ -44,7 +42,7 @@ public class Contrato extends AggregateRoot {
     }
 
     public void renovar(PeriodoContrato nuevoPeriodo) {
-        if (this.estado.es("FINALIZADO")) {
+        if (estado.es("FINALIZADO")) {
             this.periodo = nuevoPeriodo;
             this.estado = new EstadoContrato("RENOVADO");
         } else {
@@ -53,7 +51,7 @@ public class Contrato extends AggregateRoot {
     }
 
     public void finalizar() {
-        if (this.estado.es("FIRMADO") || this.estado.es("RENOVADO")) {
+        if (estado.es("FIRMADO") || estado.es("RENOVADO")) {
             this.estado = new EstadoContrato("FINALIZADO");
         } else {
             throw new IllegalStateException("Solo se pueden finalizar contratos firmados o renovados.");
@@ -65,9 +63,12 @@ public class Contrato extends AggregateRoot {
         if (propiedadId == null || inquilinoId == null) {
             throw new IllegalArgumentException("El contrato debe tener propiedad e inquilino definidos.");
         }
+        if (periodo == null || monto == null || clausulas == null || clausulas.isEmpty()) {
+            throw new IllegalArgumentException("El contrato debe tener periodo, monto y cláusulas válidas.");
+        }
     }
 
-    // Getters
+    // --- Getters ---
     public UUID getPropiedadId() {
         return propiedadId;
     }

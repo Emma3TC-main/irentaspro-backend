@@ -37,6 +37,21 @@ public class ComprobanteFiscal extends Entidad {
         validarInvariantes();
     }
 
+    /**
+     * Constructor de dominio especializado que genera el comprobante a partir del
+     * pago
+     */
+
+    public ComprobanteFiscal(Pago pago, String tipo) {
+        super(); // genera UUID
+        this.tipo = tipo;
+        this.ticketSUNAT = "TCK-" + pago.getId().toString().substring(0, 8); // simulación de ticket
+        this.xml = "<Comprobante id='" + this.id + "' tipo='" + tipo + "' pago='" + pago.getId() + "'/>";
+        validarInvariantes();
+    }
+
+
+    
     // --- Getters ---
     public String getTipo() {
         return tipo;

@@ -6,8 +6,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.irentaspro.common.domain.model.valueobjects.Monto;
+import com.irentaspro.pay.application.command.EmitirComprobanteCommand;
 import com.irentaspro.pay.application.dto.PagoDTO;
 import com.irentaspro.pay.application.mapper.PagoMapper;
+import com.irentaspro.pay.domain.model.ComprobanteFiscal;
 import com.irentaspro.pay.domain.model.Pago;
 import com.irentaspro.pay.domain.repository.PagoRepositorio;
 import com.irentaspro.pay.domain.services.PagoService;
@@ -58,4 +60,19 @@ public class PagoApplicationService {
 
         return PagoMapper.toDTO(pago);
     }
+
+    public ComprobanteFiscal emitirComprobante(EmitirComprobanteCommand command) {
+        Pago pago = pagoRepositorio.buscarPorId(command.getPagoId())
+                .orElseThrow(() -> new IllegalArgumentException("Pago no encontrado"));
+        if (!pago.estaConfirmado()) {
+            throw new IllegalStateException("No se puede emitir comprobante: el pago no está confirmado");
+        }
+
+        ComprobanteFiscal comprobante = new ComprobanteFiscal(pago, command.getTipo());
+        pago.generarComprobante(comprobante);
+        pagoRepositorio.guardar(pago);
+
+        return comprobante;
+    }
+
 }

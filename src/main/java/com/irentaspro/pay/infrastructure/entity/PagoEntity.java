@@ -41,6 +41,6 @@ public class PagoEntity {
     private String referenciaExterna;
 
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "comprobante_id")
+    @JoinColumn(name = "comprobante_id", referencedColumnName = "id")
     private ComprobanteFiscalEntity comprobanteFiscal;
 }
