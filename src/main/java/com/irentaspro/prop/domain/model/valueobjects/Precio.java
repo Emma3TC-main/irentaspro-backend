@@ -10,6 +10,11 @@ public class Precio {
         if (valor == null || valor.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("El valor del precio no puede ser negativo");
         }
+        //TDD
+        if (moneda == null || moneda.isBlank()) {
+            throw new IllegalArgumentException("El campo de moneda no pued esta vacia o en nula");
+        }
+        
         this.valor = valor;
         this.moneda = moneda;
     }

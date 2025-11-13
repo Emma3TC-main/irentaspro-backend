@@ -6,6 +6,19 @@ public class Direccion {
     private final String provincia;
 
     public Direccion(String calle, String distrito, String provincia) {
+        //TDD
+        if (calle == null || calle.isBlank()  ) {
+            throw new IllegalArgumentException("el Campo de calle no puede estar vacio o nulo");
+        }
+
+        if(distrito == null || distrito.isBlank() ){
+            throw new IllegalArgumentException("El campo de Distrito no puede estar vacio o nulo");          
+        }
+
+        if(provincia == null || provincia.isBlank()){
+            throw new IllegalArgumentException("El campo de provincia no pude estar vacio o nulo");
+        }
+
         this.calle = calle;
         this.distrito = distrito;
         this.provincia = provincia;

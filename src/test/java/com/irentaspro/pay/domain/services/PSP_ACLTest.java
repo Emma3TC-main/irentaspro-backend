@@ -9,7 +9,7 @@ import com.irentaspro.common.domain.model.valueobjects.Monto;
 import java.util.Map;
 import java.util.UUID;
 
-public class PSP_ACLTest {
+class PSP_ACLTest {
    
    private PSP_ACL acl;
     private Pago pagoDePrueba;
