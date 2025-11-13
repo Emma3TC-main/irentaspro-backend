@@ -13,11 +13,19 @@ public class StorageService implements ServiciosDominio {
     public String upload(DocumentoPropiedad documento) {
         // Lógica para subir el documento a un servicio de almacenamiento externo (S3,
         // GCS, etc.)
+
+        if (documento == null) {
+            throw new IllegalArgumentException("El documento no puede ser nulo.");
+        }
+
         return "https://storage.irentaspro.com/signed/" + documento.getUrl();
     }
 
     public String getSignedUrl(UUID idDocumento) {
         // Generar URL firmada para acceso temporal al documento
+        if (idDocumento == null) {
+            throw new IllegalArgumentException("El idDocumento no puede ser nulo.");
+        }
         return "https://storage.irentaspro.com/signed/" + idDocumento.toString();
     }
 

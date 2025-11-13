@@ -58,6 +58,9 @@ public class Propiedad extends AggregateRoot {
     // Getters
 
     public void agregarDocumento(DocumentoPropiedad documento) {
+        if (documento == null) {
+            return;
+        }
         this.documentos.add(documento);
     }
 
