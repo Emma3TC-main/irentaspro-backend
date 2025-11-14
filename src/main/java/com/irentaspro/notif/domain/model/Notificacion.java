@@ -12,6 +12,20 @@ public class Notificacion extends Entidad {
 
     public Notificacion(String destinatario, String asunto, String mensaje, String tipo, String estado,
             Plantilla plantilla) {
+                
+        if (destinatario == null || destinatario.isBlank()) {
+            throw new IllegalArgumentException("El destinatario no puede ser nulo o vacío.");
+        }
+        if (asunto == null || asunto.isEmpty()) {
+            throw new IllegalArgumentException("El asunto no puede ser nulo o vacío.");
+        }
+        if (mensaje == null) { // El mensaje podría estar vacío, pero no nulo
+            throw new IllegalArgumentException("El mensaje no puede ser nulo.");
+        }
+        if (plantilla == null) {
+            throw new IllegalArgumentException("La plantilla no puede ser nula.");
+        }
+
         this.destinatario = destinatario;
         this.asunto = asunto;
         this.mensaje = mensaje;
@@ -21,9 +35,6 @@ public class Notificacion extends Entidad {
     }
 
     public void enviar() {
-        if (destinatario == null || destinatario.isBlank()) {
-            throw new IllegalArgumentException("El destinatario no puede estar vacío");
-        }
         this.estado = "enviada";
         System.out.println("Notificación enviada a " + destinatario + " con asunto: " + asunto);
     }

@@ -35,6 +35,12 @@ public class NotIficacionService {
     }
 
     public void programarEnvio(Notificacion notificacion, LocalDateTime fechaEjecucion) {
+       if (notificacion == null) {
+            throw new IllegalArgumentException("La notificación a programar no puede ser nula.");
+        }
+        if (fechaEjecucion == null) {
+            throw new IllegalArgumentException("La fecha de ejecución no puede ser nula.");
+        }
         scheduler.programar(fechaEjecucion, notificacion::enviar);
     }
 }
