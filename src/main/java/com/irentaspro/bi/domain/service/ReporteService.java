@@ -13,6 +13,10 @@ public class ReporteService implements ServiciosDominio {
     private final MaterializedViewsDW materializedViewsDW;
 
     public ReporteService(MaterializedViewsDW materializedViewsDW) {
+        if (materializedViewsDW == null) {
+            throw new IllegalArgumentException("MaterializedViewsDW no puede ser nulo.");
+        }
+
         this.materializedViewsDW = materializedViewsDW;
     }
 
@@ -26,6 +30,10 @@ public class ReporteService implements ServiciosDominio {
      */
     public Reporte generarReporte(String tipo, Map<String, Object> filtros) {
         // Simula la creación del contenido del reporte en base a filtros
+        if (tipo == null || tipo.isBlank()) {
+            throw new IllegalArgumentException("El 'tipo' de reporte no puede ser nulo o vacío.");
+        }
+
         StringBuilder contenido = new StringBuilder("📘 Reporte tipo: ").append(tipo).append("\n");
         if (filtros != null && !filtros.isEmpty()) {
             contenido.append("Filtros aplicados:\n");
@@ -41,6 +49,14 @@ public class ReporteService implements ServiciosDominio {
      * Exporta un reporte a un formato específico (ej: PDF, CSV, JSON).
      */
     public String exportar(Reporte reporte, String formato) {
+        
+        if (reporte == null) {
+            throw new IllegalArgumentException("El 'reporte' a exportar no puede ser nulo.");
+        }
+        if (formato == null || formato.isBlank()) {
+            throw new IllegalArgumentException("El 'formato' de exportación no puede ser nulo o vacío.");
+        }
+        
         System.out.println("📤 Exportando reporte " + reporte.getTipo() + " en formato: " + formato);
         return "Reporte_" + reporte.getTipo() + "." + formato.toLowerCase();
     }
