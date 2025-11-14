@@ -7,6 +7,14 @@ public class PeriodoContrato {
     private final LocalDate fin;
 
     public PeriodoContrato(LocalDate inicio, LocalDate fin) {
+        
+        if (inicio == null) {
+            throw new IllegalArgumentException("La fecha de inicio no puede ser nula.");
+        }
+        if (fin == null) {
+            throw new IllegalArgumentException("La fecha de fin no puede ser nula.");
+        }
+
         if (fin.isBefore(inicio)) {
             throw new IllegalArgumentException("La fecha de fin no puede ser anterior a la fecha de inicio.");
         }
