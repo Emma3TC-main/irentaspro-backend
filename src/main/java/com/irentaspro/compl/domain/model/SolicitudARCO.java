@@ -15,6 +15,16 @@ public class SolicitudARCO extends Entidad {
     private String respuesta;
 
     public SolicitudARCO(TipoSolicitud tipoSolicitud, LocalDate fecha, String estado, String respuesta) {
+        
+        if (tipoSolicitud == null) {
+            throw new IllegalArgumentException("El 'tipoSolicitud' no puede ser nulo.");
+        }
+        if (fecha == null) {
+            throw new IllegalArgumentException("La 'fecha' no puede ser nula.");
+        }
+        if (estado == null || estado.isBlank()) {
+            throw new IllegalArgumentException("El 'estado' no puede ser nulo o vacío.");
+        }
         this.tipoSolicitud = tipoSolicitud;
         this.fecha = fecha;
         this.estado = estado;
@@ -27,6 +37,9 @@ public class SolicitudARCO extends Entidad {
     }
 
     public void responder(String respuesta) {
+        if (respuesta == null || respuesta.isBlank()) {
+            throw new IllegalArgumentException("La 'respuesta' no puede ser nula o vacía.");
+        }
         this.respuesta = respuesta;
         this.estado = "respondida";
     }

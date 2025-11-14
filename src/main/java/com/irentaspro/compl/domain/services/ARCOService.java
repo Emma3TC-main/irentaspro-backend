@@ -16,6 +16,12 @@ public class ARCOService implements ServiciosDominio {
     }
 
     public void responder(SolicitudARCO solicitud, String respuesta) {
+        //TDD
+        // ¡Esta es la lógica que tu test ROJO exige!
+        if (solicitud == null) {
+            throw new IllegalArgumentException("La 'solicitud' a responder no puede ser nula.");
+        }
+        
         solicitud.responder(respuesta);
         System.out.println("Solicitud ARCO respondida: " + respuesta);
     }
