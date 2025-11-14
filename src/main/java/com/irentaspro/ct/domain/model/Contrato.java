@@ -20,12 +20,23 @@ public class Contrato extends AggregateRoot {
     // Constructor
     public Contrato(UUID propiedadId, UUID inquilinoId, PeriodoContrato periodo, Monto monto,
             List<Clausula> clausulas) {
+            
+        if (periodo == null) {    
+        throw new IllegalArgumentException("El 'periodo' no puede ser nulo.");
+        }
+        if (monto == null) {
+            throw new IllegalArgumentException("El 'monto' no puede ser nulo.");
+        }
+        if (clausulas == null) {
+            throw new IllegalArgumentException("La lista de 'clausulas' no puede ser nula.");
+        }
         this.propiedadId = propiedadId;
         this.inquilinoId = inquilinoId;
         this.periodo = periodo;
         this.monto = monto;
         this.clausulas = clausulas;
         this.estado = new EstadoContrato("BORRADOR");
+        this.validarInvariantes();
     }
 
     // Método de negocio
@@ -35,6 +46,10 @@ public class Contrato extends AggregateRoot {
 
     public void firmar(FirmaDigital firma) {
         // Lógica para firmar el contrato digitalmente
+        if (firma == null) {
+            throw new IllegalArgumentException("La 'firma' digital no puede ser nula.");
+        }
+
         if (this.estado.es("BORRADOR")) {
             this.firmaDigital = firma;
             this.estado = new EstadoContrato("FIRMADO");
@@ -44,6 +59,10 @@ public class Contrato extends AggregateRoot {
     }
 
     public void renovar(PeriodoContrato nuevoPeriodo) {
+        if (nuevoPeriodo == null) {
+            throw new IllegalArgumentException("El 'nuevoPeriodo' de renovación no puede ser nulo.");
+        }
+
         if (this.estado.es("FINALIZADO")) {
             this.periodo = nuevoPeriodo;
             this.estado = new EstadoContrato("RENOVADO");
