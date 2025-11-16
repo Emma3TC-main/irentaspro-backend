@@ -1,15 +1,18 @@
 package com.irentaspro.iam.domain.model;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
-import com.irentaspro.common.domain.model.Entidad;
-
-public class Sesion extends Entidad {
+public class Sesion {
     private String token;
-    private Date expiracion;
-    private boolean activa;
+    private LocalDateTime expiracion;
+    private boolean activa = true;
 
-    // Getters y Setters
+    public Sesion(String token, LocalDateTime expiracion) {
+        this.token = token;
+        this.expiracion = expiracion;
+        this.activa = true;
+    }
+
     public void invalidar() {
         this.activa = false;
     }
@@ -27,23 +30,11 @@ public class Sesion extends Entidad {
         return token;
     }
 
-    public void setToken(String token) {
-        this.token = token;
-    }
-
-    public Date getExpiracion() {
+    public LocalDateTime getExpiracion() {
         return expiracion;
-    }
-
-    public void setExpiracion(Date expiracion) {
-        this.expiracion = expiracion;
     }
 
     public boolean isActiva() {
         return activa;
-    }
-
-    public void setActiva(boolean activa) {
-        this.activa = activa;
     }
 }
