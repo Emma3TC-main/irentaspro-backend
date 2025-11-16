@@ -15,6 +15,20 @@ public class Consentimiento extends Entidad {
 
     public Consentimiento(String texto, String version, LocalDate fechaAceptacion, UUID usuarioId, boolean aceptado) {
 
+        //TDD
+        if (texto == null || texto.isBlank()) {
+            throw new IllegalArgumentException("El 'texto' del consentimiento no puede ser nulo o vacío.");
+        }
+        if (version == null || version.isEmpty()) {
+            throw new IllegalArgumentException("La 'version' del consentimiento no puede ser nula o vacía.");
+        }
+        if (fechaAceptacion == null) {
+            throw new IllegalArgumentException("La 'fechaAceptacion' no puede ser nula.");
+        }
+        if (usuarioId == null) {
+            throw new IllegalArgumentException("El 'usuarioId' no puede ser nulo.");
+        }
+        
         this.texto = texto;
         this.version = version;
         this.fechaAceptacion = fechaAceptacion;

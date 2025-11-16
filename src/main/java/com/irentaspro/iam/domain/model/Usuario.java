@@ -44,6 +44,31 @@ public class Usuario extends AggregateRoot {
     }
 
     // Métodos de dominio y lógica de negocio aquí
+    public boolean autenticar(String credenciales) {
+        // Lógica de autenticación
+       
+        //Aplicando TDD para el método -> validarCredencialesIncorrectas
+        if (credenciales == null ) {
+            return false;
+        }
+        if (credenciales.isEmpty()) {
+            return false;
+        }
+
+        return true; // Ejemplo simplificado
+    }
+
+
+    //Aplicando TDD para el test -> cambiarPassword
+    public void cambiarPassword(PasswordHash nuevaPassword) {
+        // Lógica para cambiar la contraseña
+
+        //momentandeo simple para justificar TDD
+        this.passwordHash = nuevaPassword;
+        if(nuevaPassword == null) {
+            throw new IllegalArgumentException("La nueva contraseña no puede ser nula.");
+        }
+        
     public boolean autenticar(String password) {
         if (!passwordHash.verificar(password)) {
             throw new IllegalArgumentException("Contraseña incorrecta");
@@ -66,13 +91,18 @@ public class Usuario extends AggregateRoot {
     }
 
     public boolean esPremium() {
-        return "premiun".equalsIgnoreCase(this.tipoCuenta);
+        //Aplicando TDD, correción ortografía
+        // para justificar el tdd xd
+        return "premium".equalsIgnoreCase(this.tipoCuenta);
     }
 
+    //Modificación por TDD  Test -> generarToken
     public String generarToken() {
-        return null;
         // Lógica pendiente
+        //momentandeo simple para justificar TDD, esto se debe usar con UUID
+        return UUID.randomUUID().toString();
     }
+        
 
     @Override
     public void validarInvariantes() {

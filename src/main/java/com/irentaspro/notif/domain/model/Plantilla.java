@@ -5,6 +5,14 @@ public class Plantilla {
     private String contenidoHTML;
 
     public Plantilla(String nombre, String contenidoHTML) {
+        if (nombre == null || nombre.isBlank()) {
+            throw new IllegalArgumentException("El nombre de la plantilla no puede ser nulo o vacío.");
+        }
+
+        if (contenidoHTML == null || contenidoHTML.isEmpty()) { 
+            throw new IllegalArgumentException("El contenidoHTML de la plantilla no puede ser nulo o vacío.");
+        }
+
         this.nombre = nombre;
         this.contenidoHTML = contenidoHTML;
     }

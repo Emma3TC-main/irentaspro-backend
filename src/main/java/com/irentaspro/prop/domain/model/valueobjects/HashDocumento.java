@@ -5,6 +5,13 @@ public class HashDocumento {
     private final String algoritmo;
 
     public HashDocumento(String valor, String algoritmo) {
+        if (valor == null || valor.isBlank()) {
+            throw new IllegalArgumentException("El campo de valor no debe esta vacio o nulo");
+        }
+                
+        if (algoritmo == null || algoritmo.isBlank()) {
+            throw new IllegalArgumentException("El campo de algoritmo no debe esta vacio o nulo");
+        }
         this.valor = valor;
         this.algoritmo = algoritmo;
     }

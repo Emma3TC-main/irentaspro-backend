@@ -5,6 +5,14 @@ public class HashEvidencia {
     private final String algoritmo;
 
     public HashEvidencia(String valor, String algoritmo) {
+        
+        if (valor == null || valor.isBlank()) {
+            throw new IllegalArgumentException("El 'valor' del hash no puede ser nulo o vacío.");
+        }
+        if (algoritmo == null || algoritmo.isBlank()) {
+            throw new IllegalArgumentException("El 'algoritmo' del hash no puede ser nulo o vacío.");
+        }
+
         this.valor = valor;
         this.algoritmo = algoritmo;
     }

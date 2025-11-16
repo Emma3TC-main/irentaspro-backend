@@ -15,6 +15,27 @@ public class AuditLog extends Entidad {
 
     public AuditLog(UUID id, UUID usuarioId, String entidad, String accion, LocalDateTime fecha, String ip,
             HashEvidencia hashEvidencia) {
+        
+        // TDD
+        if (id == null) {
+            throw new IllegalArgumentException("El 'id' del log no puede ser nulo.");
+        }
+        if (usuarioId == null) {
+            throw new IllegalArgumentException("El 'usuarioId' del log no puede ser nulo.");
+        }
+        if (entidad == null || entidad.isBlank()) {
+            throw new IllegalArgumentException("La 'entidad' del log no puede ser nula o vacía.");
+        }
+        if (accion == null || accion.isEmpty()) {
+            throw new IllegalArgumentException("La 'accion' del log no puede ser nula o vacía.");
+        }
+        if (fecha == null) {
+            throw new IllegalArgumentException("La 'fecha' del log no puede ser nula.");
+        }
+        if (hashEvidencia == null) {
+            throw new IllegalArgumentException("El 'hashEvidencia' del log no puede ser nulo.");
+        }
+        this.id = id;
         this.usuarioId = usuarioId;
         this.entidad = entidad;
         this.accion = accion;

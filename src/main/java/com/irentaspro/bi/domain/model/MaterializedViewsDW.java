@@ -3,7 +3,7 @@ package com.irentaspro.bi.domain.model;
 public class MaterializedViewsDW {
     private boolean actualizado;
 
-    public void MaterializedViewsDW() {
+    public  MaterializedViewsDW() {
         this.actualizado = false;
     }
 

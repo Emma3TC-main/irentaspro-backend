@@ -17,6 +17,15 @@ public class Sesion {
         this.activa = false;
     }
 
+    //TDD, SesionTest
+    public boolean isExpirado(){
+        if (this.expiracion == null) {
+            return false;
+        }
+        Date ahora = new Date();
+        return this.expiracion.before(ahora);
+    }
+
     public String getToken() {
         return token;
     }

@@ -9,15 +9,22 @@ public class DocumentoPropiedad extends Entidad {
     private HashDocumento hash;
 
     public DocumentoPropiedad(String tipo, String url, HashDocumento hash) {
+        //Aplicando TDD, para el Test DocumentoPropiedadTest
+        if (tipo == null || tipo.isBlank()) {
+            throw new IllegalArgumentException("El 'tipo' de documento no puede ser nulo o vacío.");
+        }
+        if (url == null || url.isBlank()) { // .isBlank() es mejor que !isEmpty()
+            throw new IllegalArgumentException("La 'url' del documento no puede ser nula o vacía.");
+        }
+        if (hash == null) {
+            throw new IllegalArgumentException("El 'hash' del documento no puede ser nulo.");
+        }
+
         this.tipo = tipo;
         this.url = url;
         this.hash = hash;
     }
 
-    public boolean validar() {
-        // Lógica de validación del documento
-        return tipo != null && !tipo.isEmpty() && url != null && !url.isEmpty() && hash != null;
-    }
 
     // Getters y Setters
     public String getTipo() {
