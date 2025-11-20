@@ -5,8 +5,9 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record PagoRealizadoDTO(
-                UUID pagoId,
-                BigDecimal monto,
-                LocalDateTime fecha,
-                String referenciaExterna) {
+        UUID pagoId,
+        BigDecimal monto,
+        LocalDateTime fecha,
+        String referenciaExterna,
+        UUID usuarioId) {
 }
