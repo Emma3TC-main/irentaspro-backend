@@ -2,8 +2,6 @@ package com.irentaspro.common.domain.model;
 
 import java.util.UUID;
 
-import com.irentaspro.bi.domain.model.Reporte;
-
 import java.util.List;
 import java.util.Optional;
 

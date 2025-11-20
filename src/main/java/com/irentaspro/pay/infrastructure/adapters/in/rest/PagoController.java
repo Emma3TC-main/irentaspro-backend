@@ -63,7 +63,7 @@ public class PagoController {
     }
 
     /**
-     * Iniciar un pago externo (por ejemplo, PayPal).
+     * Iniciar un pago externo (PayPal).
      */
     @PostMapping("/iniciar")
     public ResponseEntity<?> iniciarPago(@RequestBody PagoDTO dto) {

@@ -1,5 +1,7 @@
 package com.irentaspro.pay.domain.services;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -43,4 +45,17 @@ public class PagoService {
     public void confirmar(Pago pago) {
         pago.confirmar();
     }
+
+    public Pago crearPagoPendiente(UUID contratoId, BigDecimal monto, LocalDate fechaVencimiento) {
+
+        Monto valor = new Monto(monto, "PEN");
+
+        Pago pago = new Pago(
+                contratoId,
+                valor,
+                fechaVencimiento);
+
+        return pago;
+    }
+
 }
