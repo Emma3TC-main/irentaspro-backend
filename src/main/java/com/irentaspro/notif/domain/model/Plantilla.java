@@ -1,27 +1,28 @@
 package com.irentaspro.notif.domain.model;
 
-public class Plantilla {
-    private String nombre;
-    private String contenidoHTML;
+import com.irentaspro.common.domain.model.Entidad;
 
-    public Plantilla(String nombre, String contenidoHTML) {
+public class Plantilla extends Entidad {
+    private final String nombre;
+    private final String contenidoHtml;
+
+    public Plantilla(String nombre, String contenidoHtml) {
         this.nombre = nombre;
-        this.contenidoHTML = contenidoHTML;
+        this.contenidoHtml = contenidoHtml;
+        validarInvariantes();
     }
 
-    public String getNombre() {
+    @Override
+    public void validarInvariantes() {
+        if (nombre == null || nombre.isBlank())
+            throw new IllegalArgumentException("El nombre de plantilla es requerido");
+    }
+
+    public String nombre() {
         return nombre;
     }
 
-    public String getContenidoHTML() {
-        return contenidoHTML;
-    }
-
-    public String renderizar(String... datos) {
-        String resultado = contenidoHTML;
-        for (int i = 0; i < datos.length; i++) {
-            resultado = resultado.replace("{{" + i + "}}", datos[i]);
-        }
-        return resultado;
+    public String contenidoHtml() {
+        return contenidoHtml;
     }
 }

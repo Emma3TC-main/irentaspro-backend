@@ -1,14 +1,18 @@
 package com.irentaspro.pay.application.service;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.irentaspro.common.domain.model.valueobjects.Monto;
+import com.irentaspro.common.infrastructure.DomainEventPublisher;
 import com.irentaspro.pay.application.command.EmitirComprobanteCommand;
 import com.irentaspro.pay.application.dto.PagoDTO;
 import com.irentaspro.pay.application.mapper.PagoMapper;
+import com.irentaspro.pay.domain.gateway.ContratoDTO;
+import com.irentaspro.pay.domain.gateway.ContratoGateway;
 import com.irentaspro.pay.domain.model.ComprobanteFiscal;
 import com.irentaspro.pay.domain.model.Pago;
 import com.irentaspro.pay.domain.repository.PagoRepositorio;
@@ -23,11 +27,27 @@ public class PagoApplicationService {
 
     private final PagoRepositorio pagoRepositorio;
     private final PagoService pagoService;
+    private final ContratoGateway contratoGateway;
+    private final DomainEventPublisher eventPublisher;
 
     /**
-     * Registra un nuevo pago en el sistema.
+     * Registra un nuevo pago en el sistema. Valida contra el servicio Contratos.
      */
     public PagoDTO registrarPago(PagoDTO dto) {
+
+        // Validar existencia y pertenencia del contrato
+        ContratoDTO contrato = contratoGateway.obtenerContrato(dto.getContratoId())
+                .orElseThrow(() -> new IllegalStateException("Contrato no encontrado"));
+
+        if (!contrato.usuarioId().equals(dto.getUsuarioId())) {
+            throw new IllegalArgumentException("El usuario no pertenece al contrato");
+        }
+
+        if (dto.getMonto().compareTo(contrato.montoPendiente()) > 0) {
+            throw new IllegalArgumentException("El monto excede el saldo pendiente del contrato");
+        }
+
+        // Iniciar pago en dominio (crea referencia PSP y estado 'registrado')
         Pago pago = pagoService.iniciarPago(
                 dto.getContratoId(),
                 dto.getUsuarioId(),
@@ -35,8 +55,14 @@ public class PagoApplicationService {
                 dto.getMetodo(),
                 dto.getTipoPago());
 
-        pagoRepositorio.guardar(pago);
-        return PagoMapper.toDTO(pago);
+        // Persistir
+        Pago guardado = pagoRepositorio.guardar(pago);
+
+        // Publicar eventos si el agregado registró alguno (p.ej. si iniciarPago registra algo)
+        eventPublisher.publish(guardado.getEventos());
+        guardado.limpiarEventos();
+
+        return PagoMapper.toDTO(guardado);
     }
 
     /**
@@ -47,7 +73,11 @@ public class PagoApplicationService {
                 .orElseThrow(() -> new IllegalArgumentException("Pago no encontrado"));
 
         pagoService.confirmar(pago);
-        pagoRepositorio.guardar(pago);
+        Pago guardado = pagoRepositorio.guardar(pago);
+
+        // Publicar eventos generados por el agregado (PagoConfirmado, etc.)
+        eventPublisher.publish(guardado.getEventos());
+        guardado.limpiarEventos();
     }
 
     /**
@@ -70,7 +100,11 @@ public class PagoApplicationService {
 
         ComprobanteFiscal comprobante = new ComprobanteFiscal(pago, command.getTipo());
         pago.generarComprobante(comprobante);
-        pagoRepositorio.guardar(pago);
+        Pago guardado = pagoRepositorio.guardar(pago);
+
+        // publicar evento ComprobanteEmitido
+        eventPublisher.publish(guardado.getEventos());
+        guardado.limpiarEventos();
 
         return comprobante;
     }

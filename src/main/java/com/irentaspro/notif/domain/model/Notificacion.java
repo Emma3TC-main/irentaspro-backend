@@ -1,117 +1,58 @@
 package com.irentaspro.notif.domain.model;
 
-import java.util.UUID;
 import com.irentaspro.common.domain.model.Entidad;
+import java.util.UUID;
 
-/**
- * Entidad de dominio: Notificación
- * Representa una notificación enviada al usuario (correo, SMS, push, etc.).
- * Incluye información del destinatario, contenido, tipo y estado de envío.
- */
 public class Notificacion extends Entidad {
+    private final String destinatario;
+    private final String asunto;
+    private final String mensaje;
+    private final String tipo; // EMAIL | SMS | PUSH
+    private String estado; // PENDIENTE | ENVIADA | ERROR
 
-    private String destinatario;
-    private String asunto;
-    private String mensaje;
-    private String tipo; // Ejemplo: "EMAIL", "SMS", "PUSH"
-    private String estado; // Ejemplo: "pendiente", "enviada", "fallida"
-    private Plantilla plantilla;
-
-    /**
-     * Constructor principal (para creación de una nueva notificación).
-     */
-    public Notificacion(String destinatario, String asunto, String mensaje, String tipo, String estado,
-            Plantilla plantilla) {
-        super(); // genera UUID
-        this.destinatario = destinatario;
-        this.asunto = asunto;
-        this.mensaje = mensaje;
-        this.tipo = tipo;
-        this.estado = estado != null ? estado : "pendiente";
-        this.plantilla = plantilla;
-        validarInvariantes();
-    }
-
-    /**
-     * Constructor usado para reconstrucción desde persistencia.
-     */
-    public Notificacion(UUID id, String destinatario, String asunto, String mensaje, String tipo, String estado,
-            Plantilla plantilla) {
+    public Notificacion(UUID id, String destinatario, String asunto, String mensaje, String tipo) {
         super(id);
         this.destinatario = destinatario;
         this.asunto = asunto;
         this.mensaje = mensaje;
         this.tipo = tipo;
-        this.estado = estado;
-        this.plantilla = plantilla;
+        this.estado = "PENDIENTE";
         validarInvariantes();
     }
 
-    // --- Lógica de negocio ---
-    public void enviar() {
-        if (estado.equalsIgnoreCase("enviada")) {
-            throw new IllegalStateException("La notificación ya fue enviada.");
-        }
-        if (destinatario == null || destinatario.isBlank()) {
-            throw new IllegalArgumentException("El destinatario no puede estar vacío.");
-        }
-        this.estado = "enviada";
-        // Aquí podría dispararse un evento de dominio: NotificacionEnviada
+    public void marcarEnviada() {
+        this.estado = "ENVIADA";
     }
 
-    public void marcarFallida(String motivo) {
-        this.estado = "fallida";
-        // Podría registrarse un evento o log de error con el motivo
+    public void marcarError() {
+        this.estado = "ERROR";
     }
 
-    // --- Getters ---
-    public String getDestinatario() {
+    @Override
+    public void validarInvariantes() {
+        if (destinatario == null || destinatario.isBlank())
+            throw new IllegalArgumentException("El destinatario no puede ser vacío");
+        if (tipo == null)
+            throw new IllegalArgumentException("El tipo no puede ser nulo");
+    }
+
+    public String destinatario() {
         return destinatario;
     }
 
-    public String getAsunto() {
+    public String asunto() {
         return asunto;
     }
 
-    public String getMensaje() {
+    public String mensaje() {
         return mensaje;
     }
 
-    public String getTipo() {
+    public String tipo() {
         return tipo;
     }
 
-    public String getEstado() {
+    public String estado() {
         return estado;
-    }
-
-    public Plantilla getPlantilla() {
-        return plantilla;
-    }
-
-    // --- Setters controlados ---
-    public void actualizarEstado(String nuevoEstado) {
-        if (nuevoEstado == null || nuevoEstado.isBlank()) {
-            throw new IllegalArgumentException("El estado no puede estar vacío.");
-        }
-        this.estado = nuevoEstado;
-    }
-
-    public void asignarPlantilla(Plantilla plantilla) {
-        this.plantilla = plantilla;
-    }
-
-    // --- Validación de invariantes ---
-    @Override
-    public void validarInvariantes() {
-        if (asunto == null || asunto.isBlank()) {
-            throw new IllegalArgumentException("El asunto no puede estar vacío.");
-        }
-        if (mensaje == null || mensaje.isBlank()) {
-            throw new IllegalArgumentException("El mensaje no puede estar vacío.");
-        }
-        if (tipo == null || tipo.isBlank()) {
-            throw new IllegalArgumentException("El tipo de notificación es obligatorio.");
-        }
     }
 }

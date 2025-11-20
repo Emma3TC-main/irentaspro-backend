@@ -1,5 +1,6 @@
 package com.irentaspro.pay.domain.model;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 import com.irentaspro.common.domain.model.AggregateRoot;
@@ -23,6 +24,8 @@ public class Pago extends AggregateRoot {
     private String estado;
     private String referenciaExterna;
     private ComprobanteFiscal comprobanteFiscal;
+
+    private LocalDate fechaVencimiento;
 
     // --- Constructores de dominio ---
     public Pago(UUID contratoId, UUID usuarioId, Monto monto, String metodo, String tipoPago, String estado) {
@@ -50,6 +53,23 @@ public class Pago extends AggregateRoot {
         this.estado = estado;
         this.referenciaExterna = referenciaExterna;
         this.validarInvariantes();
+    }
+
+    /**
+     * Constructor para pagos pendientes
+     */
+    public Pago(UUID contratoId,
+            Monto monto,
+            LocalDate fechaVencimiento) {
+
+        this.id = UUID.randomUUID();
+        this.contratoId = contratoId;
+        this.monto = monto;
+        this.metodo = "ALQUILER";
+        this.tipoPago = "PENDIENTE";
+        this.estado = "PENDIENTE";
+        this.fechaVencimiento = fechaVencimiento;
+        validarInvariantes();
     }
 
     /**
@@ -132,9 +152,19 @@ public class Pago extends AggregateRoot {
 
     @Override
     public void validarInvariantes() {
-        if (contratoId == null || usuarioId == null)
-            throw new IllegalArgumentException("Contrato y usuario no pueden ser nulos.");
+        if (contratoId == null)
+            throw new IllegalArgumentException("El contrato no puede ser nulo.");
+
         if (monto == null)
             throw new IllegalArgumentException("El monto no puede ser nulo.");
+
+        if (estado == null)
+            throw new IllegalArgumentException("El estado no puede ser nulo.");
+
+        // Solo pagos registrados/confirmados requieren usuarioId
+        if ((estado.equals("registrado") || estado.equals("confirmado"))
+                && usuarioId == null)
+            throw new IllegalArgumentException(
+                    "Los pagos registrados o confirmados deben tener usuario asignado.");
     }
 }

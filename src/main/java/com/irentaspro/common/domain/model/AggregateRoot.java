@@ -4,13 +4,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import lombok.Getter;
+
 /**
  * Clase base para agregados raíz.
  * Permite registrar y recuperar eventos de dominio.
  */
 public abstract class AggregateRoot extends Entidad {
 
-    private final List<Object> eventos = new ArrayList<>();
+    @Getter
+    private final List<DomainEvent> eventos = new ArrayList<>();
 
     protected AggregateRoot() {
         super();
@@ -23,14 +26,18 @@ public abstract class AggregateRoot extends Entidad {
     /**
      * Registra un nuevo evento de dominio.
      */
-    protected void registrarEvento(Object evento) {
+    protected void registrarEvento(DomainEvent evento) {
         eventos.add(evento);
+    }
+
+    protected void agregarEventoDominio(DomainEvent evento) {
+        registrarEvento(evento);
     }
 
     /**
      * Devuelve los eventos de dominio registrados (solo lectura).
      */
-    public List<Object> getEventos() {
+    public List<DomainEvent> getEventos() {
         return Collections.unmodifiableList(eventos);
     }
 
