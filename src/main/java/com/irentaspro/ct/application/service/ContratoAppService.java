@@ -17,6 +17,7 @@ import com.irentaspro.ct.application.dto.ContratoResponseDTO;
 import com.irentaspro.ct.application.dto.CuotaContratoDTO;
 import com.irentaspro.ct.application.dto.CrearContratoDTO;
 import com.irentaspro.ct.application.dto.FirmarContratoDTO;
+import com.irentaspro.ct.application.dto.PagoRealizadoDTO;
 import com.irentaspro.ct.application.dto.FinalizarContratoDTO;
 import com.irentaspro.ct.application.dto.RegistrarPagoContratoDTO;
 import com.irentaspro.ct.application.dto.RenovarContratoDTO;
@@ -231,6 +232,41 @@ public class ContratoAppService {
     public List<ContratoDTO> listarContratos() {
         return contratoRepositorio.buscarTodos().stream().map(ContratoApplicationMapper::toDTO)
                 .collect(Collectors.toList());
+    }
+
+    // -----------------------
+    // Registrar Pago externo
+    // -----------------------
+
+    public void registrarPagoExterno(UUID contratoId, PagoRealizadoDTO dto) {
+
+        Contrato contrato = contratoRepositorio.buscarPorId(contratoId)
+                .orElseThrow(() -> new IllegalArgumentException("Contrato no encontrado"));
+
+        if (dto.getMonto() == null || dto.getMonto().compareTo(BigDecimal.ZERO) <= 0)
+            throw new IllegalArgumentException("Monto inválido.");
+
+        // misma regla del dominio: registrar pago
+        contrato.registrarPago(dto.getMonto());
+
+        // guardar agregado
+        Contrato guardado = contratoRepositorio.guardar(contrato);
+
+        // actualizar cuotas igual que en registrarPago
+        var pendientes = cuotaRepository.findByContratoIdAndPagadoFalse(contratoId);
+        BigDecimal restante = dto.getMonto();
+        for (var cuota : pendientes) {
+            if (restante.compareTo(BigDecimal.ZERO) <= 0)
+                break;
+            if (restante.compareTo(cuota.getMonto()) >= 0) {
+                cuota.setPagado(true);
+                restante = restante.subtract(cuota.getMonto());
+                cuotaRepository.save(cuota);
+            } else
+                break;
+        }
+
+        publishAndClear(guardado);
     }
 
     // -----------------------

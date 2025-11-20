@@ -11,9 +11,6 @@ import com.irentaspro.pay.domain.gateway.ContratoDTO;
 import com.irentaspro.pay.domain.gateway.ContratoGateway;
 import com.irentaspro.pay.domain.gateway.PagoRealizadoDTO;
 
-// IMPORTA el DTO real del microservicio Contratos
-import com.irentaspro.ct.application.dto.ContratoResponseDTO; 
-
 import lombok.RequiredArgsConstructor;
 
 @Component
@@ -21,24 +18,25 @@ import lombok.RequiredArgsConstructor;
 public class ContratoGatewayImpl implements ContratoGateway {
 
     private final RestTemplate restTemplate;
+
     private static final String BASE_URL = "http://contratos/api/contratos";
 
     @Override
     public Optional<ContratoDTO> obtenerContrato(UUID contratoId) {
 
-        ResponseEntity<ContratoResponseDTO> res = restTemplate.getForEntity(
+        ResponseEntity<com.irentaspro.ct.application.dto.ContratoDTO> res = restTemplate.getForEntity(
                 BASE_URL + "/" + contratoId,
-                ContratoResponseDTO.class);
+                com.irentaspro.ct.application.dto.ContratoDTO.class);
 
         var body = res.getBody();
-        if (body == null) return Optional.empty();
+        if (body == null)
+            return Optional.empty();
 
-        // Mapear al DTO del contexto Pago — SIN FILTRAR LA ESTRUCTURA DE CT
-        var dto = new ContratoDTO(
+        // Mapear al ContratoDTO del dominio de pago
+        ContratoDTO dto = new ContratoDTO(
                 body.getId(),
-                body.getUsuarioId(),
-                body.getSaldoPendiente()
-        );
+                body.getInquilinoId(),
+                body.getMontoPendiente());
 
         return Optional.of(dto);
     }

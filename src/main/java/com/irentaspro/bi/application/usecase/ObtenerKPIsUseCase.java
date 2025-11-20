@@ -3,10 +3,13 @@ package com.irentaspro.bi.application.usecase;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.stereotype.Service;
+
 import com.irentaspro.bi.application.dto.KPIContratoResponse;
 import com.irentaspro.bi.application.dto.KPIGlobalResponse;
 import com.irentaspro.bi.domain.port.ReporteRepository;
 
+@Service
 public class ObtenerKPIsUseCase {
 
     private final ReporteRepository repository;

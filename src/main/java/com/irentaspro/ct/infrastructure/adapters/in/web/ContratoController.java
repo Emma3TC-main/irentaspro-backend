@@ -13,6 +13,7 @@ import com.irentaspro.ct.application.dto.ContratoDTO;
 import com.irentaspro.ct.application.dto.ContratoResponseDTO;
 import com.irentaspro.ct.application.dto.CrearContratoDTO;
 import com.irentaspro.ct.application.dto.FirmarContratoDTO;
+import com.irentaspro.ct.application.dto.PagoRealizadoDTO;
 import com.irentaspro.ct.application.dto.FinalizarContratoDTO;
 import com.irentaspro.ct.application.dto.RegistrarPagoContratoDTO;
 import com.irentaspro.ct.application.dto.RenovarContratoDTO;
@@ -21,7 +22,7 @@ import com.irentaspro.ct.application.service.ContratoAppService;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/contratos")
+@RequestMapping("/api/contratos")
 public class ContratoController {
 
     private final ContratoAppService contratoAppService;
@@ -55,7 +56,7 @@ public class ContratoController {
         return ResponseEntity.ok(contratoAppService.generarCalendario(id));
     }
 
-    // Registrar pago
+    // Registrar pago : Pago local del inquilino
     @PostMapping("/{id}/pago")
     public ResponseEntity<ContratoResponseDTO> registrarPago(
             @PathVariable UUID id,
@@ -93,4 +94,15 @@ public class ContratoController {
     public ResponseEntity<List<ContratoDTO>> listarContratos() {
         return ResponseEntity.ok(contratoAppService.listarContratos());
     }
+
+    // Pago externo proveniente del PSP
+    @PostMapping("/{id}/pagos")
+    public ResponseEntity<Void> registrarPagoDesdePay(
+            @PathVariable UUID id,
+            @RequestBody PagoRealizadoDTO dto) {
+
+        contratoAppService.registrarPagoExterno(id, dto);
+        return ResponseEntity.ok().build();
+    }
+
 }
