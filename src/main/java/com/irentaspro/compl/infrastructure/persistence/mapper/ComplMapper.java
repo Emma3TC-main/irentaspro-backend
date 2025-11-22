@@ -9,14 +9,25 @@ import com.irentaspro.compl.domain.model.SolicitudARCO;
 import com.irentaspro.compl.infrastructure.persistence.entity.AuditLogEntity;
 import com.irentaspro.compl.infrastructure.persistence.entity.ConsentimientoEntity;
 import com.irentaspro.compl.infrastructure.persistence.entity.SolicitudARCOEntity;
+import com.irentaspro.iam.infrastructure.entity.UsuarioEntity;
 
 public class ComplMapper {
 
     // ---------------- AuditLog ----------------
     public static AuditLogEntity toEntity(AuditLog d) {
-        String he = (d.getHashEvidencia() != null) ? d.getHashEvidencia().toString() : null;
-        return new AuditLogEntity(d.getId(), d.getUsuarioId(), d.getEntidad(), d.getAccion(), d.getFecha(),
-                d.getIp(), he);
+
+        AuditLogEntity e = new AuditLogEntity();
+
+        e.setId(d.getId());
+        e.setUsuarioId(d.getUsuarioId());
+        e.setEntidad(d.getEntidad());
+        e.setAccion(d.getAccion());
+        e.setFecha(d.getFecha());
+        e.setIp(d.getIp());
+        e.setHashEvidencia(
+                d.getHashEvidencia() != null ? d.getHashEvidencia().toString() : null);
+
+        return e;
     }
 
     public static AuditLog toDomain(AuditLogEntity e) {
@@ -36,36 +47,48 @@ public class ComplMapper {
     }
 
     // ---------------- Consentimiento ----------------
-    public static ConsentimientoEntity toEntity(Consentimiento c) {
+    public static ConsentimientoEntity toEntity(Consentimiento c, UsuarioEntity usuario) {
         if (c == null)
             return null;
-        return new ConsentimientoEntity(
-                c.getId(),
-                c.getTexto(),
-                c.getVersion(),
-                c.getUsuarioId(),
-                c.getFechaAceptacion(),
-                c.isAceptado());
+
+        ConsentimientoEntity e = new ConsentimientoEntity();
+        e.setId(c.getId());
+        e.setTexto(c.getTexto());
+        e.setVersion(c.getVersion());
+        e.setFechaAceptacion(c.getFechaAceptacion());
+        e.setAceptado(c.isAceptado());
+        e.setUsuario(usuario); // <--- FIX IMPORTANTE
+
+        return e;
     }
 
     public static Consentimiento toDomain(ConsentimientoEntity e) {
         if (e == null)
             return null;
-        return Consentimiento.reconstruir(e.getId(), e.getTexto(), e.getVersion(), e.getUsuarioId(), e.isAceptado(),
+        return Consentimiento.reconstruir(
+                e.getId(),
+                e.getTexto(),
+                e.getVersion(),
+                e.getUsuarioId(), // <--- FIX USANDO EL GETTER
+                e.isAceptado(),
                 e.getFechaAceptacion());
+
     }
 
     // ---------------- SolicitudARCO ----------------
-    public static SolicitudARCOEntity toEntity(SolicitudARCO s) {
+    public static SolicitudARCOEntity toEntity(SolicitudARCO s, UsuarioEntity usuario) {
         if (s == null)
             return null;
-        return new SolicitudARCOEntity(
-                s.getId(),
-                s.getUsuarioId(), 
-                s.getTipoSolicitud(),
-                s.getFecha(),
-                s.getEstado(),
-                s.getRespuesta());
+
+        SolicitudARCOEntity e = new SolicitudARCOEntity();
+        e.setId(s.getId());
+        e.setTipoSolicitud(s.getTipoSolicitud());
+        e.setEstado(s.getEstado());
+        e.setFecha(s.getFecha());
+        e.setRespuesta(s.getRespuesta());
+        e.setUsuario(usuario); // <--- FIX
+
+        return e;
     }
 
     public static SolicitudARCO toDomain(SolicitudARCOEntity e) {
@@ -74,11 +97,12 @@ public class ComplMapper {
 
         return SolicitudARCO.reconstruir(
                 e.getId(),
-                e.getUsuarioId(),
+                e.getUsuarioId(), // <--- FIX
                 e.getTipoSolicitud(),
                 e.getFecha(),
                 e.getEstado(),
                 e.getRespuesta());
+
     }
 
 }

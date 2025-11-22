@@ -4,23 +4,31 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
+
 import lombok.RequiredArgsConstructor;
 
 import com.irentaspro.compl.domain.model.Consentimiento;
 import com.irentaspro.compl.domain.repository.ConsentimientoRepository;
 import com.irentaspro.compl.infrastructure.persistence.jpa.JpaConsentimientoRepository;
 import com.irentaspro.compl.infrastructure.persistence.mapper.ComplMapper;
+import com.irentaspro.iam.infrastructure.repository.UsuarioJpaRepository;
 
 @Component
 @RequiredArgsConstructor
 public class JpaConsentimientoAdapter implements ConsentimientoRepository {
 
     private final JpaConsentimientoRepository jpa;
+    private final UsuarioJpaRepository usuarioRepo;
 
     @Override
     public Consentimiento guardar(Consentimiento consentimiento) {
-        var entity = ComplMapper.toEntity(consentimiento);
+
+        var usuario = usuarioRepo.findById(consentimiento.getUsuarioId())
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no existe"));
+
+        var entity = ComplMapper.toEntity(consentimiento, usuario);
         var saved = jpa.save(entity);
+
         return ComplMapper.toDomain(saved);
     }
 
@@ -31,7 +39,7 @@ public class JpaConsentimientoAdapter implements ConsentimientoRepository {
 
     @Override
     public Optional<Consentimiento> buscarPorUsuario(UUID usuarioId) {
-        return jpa.findFirstByUsuarioIdOrderByFechaAceptacionDesc(usuarioId)
+        return jpa.findFirstByUsuario_IdOrderByFechaAceptacionDesc(usuarioId)
                 .map(ComplMapper::toDomain);
     }
 }
