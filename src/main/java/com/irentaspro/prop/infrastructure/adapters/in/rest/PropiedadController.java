@@ -1,72 +1,58 @@
+// src/main/java/com/irentaspro/prop/infrastructure/adapters/in/rest/PropiedadController.java
 package com.irentaspro.prop.infrastructure.adapters.in.rest;
 
-import java.util.List;
-import java.util.UUID;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
+import com.irentaspro.iam.domain.repository.IAuthRepositorio;
 import com.irentaspro.prop.application.dto.PropiedadRequest;
 import com.irentaspro.prop.application.dto.PropiedadResponse;
-import com.irentaspro.prop.application.services.ActualizarPropiedadService;
 import com.irentaspro.prop.application.services.CrearPropiedadService;
 import com.irentaspro.prop.application.services.ListarPropiedadesService;
 import com.irentaspro.prop.application.services.ListarTodasPropiedadesService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
+import java.util.List;
+import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/propiedades")
-@CrossOrigin(origins = "*")
+@RequiredArgsConstructor
+@RequestMapping("/api/propiedades")
 public class PropiedadController {
 
-    private final CrearPropiedadService crearService;
+  private final CrearPropiedadService crearPropiedadService;
+  private final ListarPropiedadesService listarPropiedadesService;
+  private final ListarTodasPropiedadesService listarTodasPropiedadesService;
+  private final IAuthRepositorio usuarios;
 
-    private final ActualizarPropiedadService actualizarService;
+  /** Catálogo público (FREE y anónimo) */
+  @GetMapping
+  public ResponseEntity<List<PropiedadResponse>> listarTodas() {
+    return ResponseEntity.ok(listarTodasPropiedadesService.listarTodas());
+  }
 
-    private final ListarPropiedadesService listarService;
+  /** Detalle público */
+  @GetMapping("/{id}")
+  public ResponseEntity<PropiedadResponse> getById(@PathVariable UUID id) {
+    return ResponseEntity.ok(listarPropiedadesService.obtenerPorId(id));
+  }
 
-    private final ListarTodasPropiedadesService listarTodasService;
+  /** Crear propiedad (requiere JWT y plan PREMIUM) */
+  @PostMapping
+  public ResponseEntity<PropiedadResponse> crear(@RequestBody PropiedadRequest request,
+                                                 Principal principal) {
+    String email = principal.getName();
 
-    public PropiedadController(
-            CrearPropiedadService crearService,
-            ActualizarPropiedadService actualizarService,
-            ListarPropiedadesService listarService,
-            ListarTodasPropiedadesService listarTodasService) {
-        this.crearService = crearService;
-        this.actualizarService = actualizarService;
-        this.listarService = listarService;
-        this.listarTodasService = listarTodasService;
+    var usuario = usuarios.buscarPorEmail(email)
+        .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+
+    if (usuario.getTipoCuenta() == null ||
+        !usuario.getTipoCuenta().equalsIgnoreCase("PREMIUM")) {
+      throw new IllegalArgumentException("Solo usuarios PREMIUM pueden crear propiedades");
     }
 
-    @PostMapping
-    public ResponseEntity<?> crear(@RequestBody PropiedadRequest request) {
-        try {
-            return ResponseEntity.ok(crearService.ejecutar(request));
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
-        }
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<PropiedadResponse> actualizar(@PathVariable UUID id, @RequestBody PropiedadRequest request) {
-        return ResponseEntity.ok(actualizarService.ejecutar(id, request));
-    }
-
-    @GetMapping("/owner/{ownerId}")
-    public ResponseEntity<List<PropiedadResponse>> listarPorOwner(@PathVariable UUID ownerId) {
-        return ResponseEntity.ok(listarService.ejecutar(ownerId));
-    }
-
-    @GetMapping
-    public ResponseEntity<List<PropiedadResponse>> listarTodas() {
-        return ResponseEntity.ok(listarTodasService.ejecutar());
-    }
-
+    UUID ownerId = usuario.getId();
+    var response = crearPropiedadService.crearPropiedad(request, ownerId);
+    return ResponseEntity.ok(response);
+  }
 }

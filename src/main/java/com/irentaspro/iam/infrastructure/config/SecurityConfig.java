@@ -2,6 +2,7 @@ package com.irentaspro.iam.infrastructure.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -22,23 +23,41 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
         http
             .csrf(csrf -> csrf.disable())
             .httpBasic(b -> b.disable())
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
             .authorizeHttpRequests(auth -> auth
+                // 🔓 Login / Registro
                 .requestMatchers("/api/auth/**").permitAll()
+
+                // 🔓 Propiedades públicas (FREE users ven propiedades)
+                .requestMatchers(HttpMethod.GET, "/api/propiedades/**").permitAll()
+
+                // 🔐 Cualquier POST/PUT/DELETE en propiedades requiere token (modo PREMIUM)
+                .requestMatchers(HttpMethod.POST, "/api/propiedades/**").authenticated()
+                .requestMatchers(HttpMethod.PUT, "/api/propiedades/**").authenticated()
+                .requestMatchers(HttpMethod.DELETE, "/api/propiedades/**").authenticated()
+
+                // 🔐 Todo lo demás requiere autenticación
                 .anyRequest().authenticated()
             )
-            .cors(c -> {}) // HABILITAR CORS
+
+            .cors(c -> {}) // habilitar CORS
+
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
+
     @Bean
     public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {
+
         var config = new org.springframework.web.cors.CorsConfiguration();
+
         config.setAllowedOrigins(java.util.List.of("http://localhost:4200"));
         config.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(java.util.List.of("Authorization", "Content-Type"));
@@ -46,6 +65,7 @@ public class SecurityConfig {
 
         var source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
+
         return source;
     }
 
