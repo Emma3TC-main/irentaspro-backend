@@ -15,8 +15,8 @@ import com.irentaspro.pay.domain.gateway.PasarelaPagoGateway;
 public class PaypalGatewayAdapter implements PasarelaPagoGateway {
 
     private static final String PAYPAL_API_URL = "https://api.sandbox.paypal.com";
-    private static final String CLIENT_ID = "TU_CLIENT_ID_SANDBOX";
-    private static final String CLIENT_SECRET = "TU_CLIENT_SECRET_SANDBOX";
+    private final String clientId = System.getenv("PAYPAL_CLIENT_ID");
+    private final String clientSecret = System.getenv("PAYPAL_CLIENT_SECRET");
 
     private final RestTemplate restTemplate = new RestTemplate();
 
@@ -56,7 +56,7 @@ public class PaypalGatewayAdapter implements PasarelaPagoGateway {
         String url = PAYPAL_API_URL + "/v1/oauth2/token";
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setBasicAuth(CLIENT_ID, CLIENT_SECRET);
+        headers.setBasicAuth(clientId, clientSecret);
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         HttpEntity<String> request = new HttpEntity<>("grant_type=client_credentials", headers);
