@@ -21,44 +21,32 @@ public class AuthApplicationService {
     private final UsuarioMapper mapper;
 
     public UsuarioDTO registrarUsuario(String nombre, String email, String password) {
-        // --- Limpieza y validación del correo ---
         if (email == null || email.isBlank()) {
             throw new IllegalArgumentException("El correo electrónico no puede estar vacío");
         }
-
-        // Normalizar (trim + lowercase)
         email = email.trim().toLowerCase();
-
-        // Validar formato con expresión robusta
 
         if (!email.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
             throw new IllegalArgumentException("Formato de correo electrónico inválido");
         }
-
-        // Evitar comas, espacios o caracteres extraños
         if (email.contains(",") || email.contains(" ")) {
             throw new IllegalArgumentException("El correo electrónico contiene caracteres inválidos");
         }
 
-        // --- Verificar duplicado ---
         authRepositorio.buscarPorEmail(email).ifPresent(u -> {
             throw new IllegalArgumentException("El correo electrónico ya está registrado");
         });
 
-        // --- Validación de la contraseña ---
         var policy = new PasswordPolicy();
         policy.validarComplejidad(password);
 
-        // --- Crear hash y entidad de dominio ---
         var passwordHash = PasswordHash.crearDesdeTexto(password);
         var usuario = new Usuario(nombre, new Email(email), passwordHash);
-
         usuario.validarInvariantes();
+        usuario.setTipoCuenta("FREE");
 
-        // --- Guardar en el repositorio ---
         authRepositorio.guardar(usuario);
 
-        // --- Devolver DTO ---
         return mapper.toDto(usuario);
     }
 
@@ -77,4 +65,13 @@ public class AuthApplicationService {
         return authService.issueToken(usuario);
     }
 
+    /** NUEVO: obtener DTO del usuario por email (para /me) */
+    public UsuarioDTO obtenerUsuarioPorEmail(String email) {
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("Email inválido");
+        }
+        var usuario = authRepositorio.buscarPorEmail(email.trim().toLowerCase())
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+        return mapper.toDto(usuario);
+    }
 }

@@ -16,26 +16,33 @@ public class AuthController {
 
     private final AuthApplicationService authApplicationService;
 
-    /**
-     * Registro de usuario
-     */
+    /** Registro de usuario (form params) */
     @PostMapping("/register")
     public ResponseEntity<UsuarioDTO> register(
             @RequestParam String nombre,
             @RequestParam String email,
             @RequestParam String password) {
+
         UsuarioDTO usuario = authApplicationService.registrarUsuario(nombre, email, password);
         return ResponseEntity.status(HttpStatus.CREATED).body(usuario);
     }
 
-    /**
-     * Autenticación de usuario
-     */
+    /** Autenticación (devuelve token como String plano) */
     @PostMapping("/login")
     public ResponseEntity<String> login(
             @RequestParam String email,
             @RequestParam String password) {
+
         String token = authApplicationService.autenticar(email, password);
         return ResponseEntity.ok(token);
+    }
+
+    /** Usuario actual (JWT requerido) */
+    @GetMapping("/me")
+    public ResponseEntity<UsuarioDTO> me(org.springframework.security.core.Authentication authentication) {
+        // En JwtAuthenticationFilter dejas el "email" como principal
+        String email = (String) authentication.getPrincipal();
+        UsuarioDTO dto = authApplicationService.obtenerUsuarioPorEmail(email);
+        return ResponseEntity.ok(dto);
     }
 }
