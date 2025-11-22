@@ -2,68 +2,75 @@ package com.irentaspro.compl.domain.model;
 
 import java.time.LocalDate;
 import java.util.UUID;
-
 import com.irentaspro.common.domain.model.Entidad;
 
-/**
- * Representa el consentimiento otorgado por un usuario
- * sobre el tratamiento de sus datos personales,
- * incluyendo la versión del texto legal aceptado y su estado actual.
- */
 public class Consentimiento extends Entidad {
 
     private final String texto;
     private final String version;
     private final UUID usuarioId;
-    private LocalDate fechaAceptacion;
     private boolean aceptado;
+    private LocalDate fechaAceptacion;
 
-    /**
-     * Crea un consentimiento asociado a un usuario, inicialmente no aceptado.
-     * 
-     * @param texto     Texto del consentimiento.
-     * @param version   Versión del documento.
-     * @param usuarioId Identificador del usuario asociado.
-     */
-    public Consentimiento(String texto, String version, UUID usuarioId) {
-        super();
+    private Consentimiento(UUID id,
+            String texto,
+            String version,
+            UUID usuarioId,
+            boolean aceptado,
+            LocalDate fechaAceptacion) {
+        super(id);
         this.texto = texto;
         this.version = version;
         this.usuarioId = usuarioId;
-        this.aceptado = false;
-        this.fechaAceptacion = null;
+        this.aceptado = aceptado;
+        this.fechaAceptacion = fechaAceptacion;
         validarInvariantes();
     }
 
-    /**
-     * Marca el consentimiento como aceptado y registra la fecha actual.
-     */
-    public void aceptar() {
-        this.aceptado = true;
-        this.fechaAceptacion = LocalDate.now();
+    public static Consentimiento crearNuevo(String texto, String version, UUID usuarioId) {
+        return new Consentimiento(
+                UUID.randomUUID(),
+                texto,
+                version,
+                usuarioId,
+                false,
+                null);
     }
 
-    /**
-     * Revoca el consentimiento sin eliminar el registro histórico.
-     */
+    public static Consentimiento reconstruir(UUID id, String texto, String version,
+            UUID usuarioId, boolean aceptado,
+            LocalDate fechaAceptacion) {
+        return new Consentimiento(id, texto, version, usuarioId, aceptado, fechaAceptacion);
+    }
+
+    public void aceptar() {
+        if (aceptado)
+            throw new IllegalStateException("El consentimiento ya está aceptado.");
+        aceptado = true;
+        fechaAceptacion = LocalDate.now();
+        validarInvariantes();
+    }
+
     public void revocar() {
-        this.aceptado = false;
+        if (!aceptado)
+            throw new IllegalStateException("El consentimiento ya está revocado.");
+        aceptado = false;
+        validarInvariantes();
     }
 
     @Override
     public void validarInvariantes() {
-        if (texto == null || texto.isBlank()) {
+        if (texto == null || texto.isBlank())
             throw new IllegalArgumentException("El texto del consentimiento no puede estar vacío.");
-        }
-        if (version == null || version.isBlank()) {
+        if (version == null || version.isBlank())
             throw new IllegalArgumentException("La versión del consentimiento no puede estar vacía.");
-        }
-        if (usuarioId == null) {
-            throw new IllegalArgumentException("Debe asociarse un usuario válido al consentimiento.");
-        }
+        if (usuarioId == null)
+            throw new IllegalArgumentException("Debe existir un usuario asociado.");
+
+        if (fechaAceptacion != null && fechaAceptacion.isAfter(LocalDate.now()))
+            throw new IllegalArgumentException("La fecha de aceptación no puede ser futura.");
     }
 
-    // Getters
     public String getTexto() {
         return texto;
     }
