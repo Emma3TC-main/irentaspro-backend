@@ -3,9 +3,9 @@ spring:
     name: irentaspro
 
   datasource:
-    url: jdbc:postgresql://pg-3753d7be-irentaspro.f.aivencloud.com:11827/irentaspro?sslmode=require
-    username: avnadmin
-    password: PLACEHOLDER
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASS}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 5
@@ -20,10 +20,9 @@ spring:
     properties:
       hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
 
-  autoconfigure:
-    exclude:
-      - org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
-      - org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration
+  data:
+    mongodb:
+      uri: ${MONGO_URI}
 
 server:
   port: 8080
