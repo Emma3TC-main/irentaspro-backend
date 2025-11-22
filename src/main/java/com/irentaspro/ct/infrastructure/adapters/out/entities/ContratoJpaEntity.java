@@ -2,15 +2,13 @@ package com.irentaspro.ct.infrastructure.adapters.out.entities;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import com.irentaspro.ct.infrastructure.adapters.out.jpa.FirmaDigitalEmbeddable;
+import com.irentaspro.iam.infrastructure.entity.UsuarioEntity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Table(name = "contratos")
@@ -19,7 +17,7 @@ import lombok.Setter;
 public class ContratoJpaEntity {
 
     @Id
-    @Column(name = "id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(name = "propiedad_id", nullable = false)
@@ -31,40 +29,32 @@ public class ContratoJpaEntity {
     @Column(name = "inquilino_id", nullable = false)
     private UUID inquilinoId;
 
-    @Column(name = "inicio")
     private LocalDate inicio;
-
-    @Column(name = "fin")
     private LocalDate fin;
 
-    @Column(name = "monto", precision = 19, scale = 4)
+    @Column(precision = 19, scale = 4)
     private BigDecimal monto;
 
-    @Column(name = "moneda", length = 3)
     private String moneda;
 
     @Column(name = "monto_pendiente", precision = 19, scale = 4)
     private BigDecimal montoPendiente;
 
-    @Column(name = "estado", length = 50)
     private String estado;
 
     @Embedded
     private FirmaDigitalEmbeddable firma;
 
-    // relaciones
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "contrato_id", referencedColumnName = "id")
+    @OneToMany(mappedBy = "contrato", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CuotaJpaEntity> cuotas = new ArrayList<>();
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "contrato_id", referencedColumnName = "id")
+    @OneToMany(mappedBy = "contrato", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ClausulaJpaEntity> clausulas = new ArrayList<>();
 
-    public ContratoJpaEntity() {
-    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "propietario_id", insertable = false, updatable = false)
+    private UsuarioEntity propietario;
 
-    // IMPORTANTE: mantener consistencia bidireccional
     public void addClausula(ClausulaJpaEntity c) {
         clausulas.add(c);
         c.setContrato(this);
@@ -74,5 +64,4 @@ public class ContratoJpaEntity {
         cuotas.add(q);
         q.setContrato(this);
     }
-
 }

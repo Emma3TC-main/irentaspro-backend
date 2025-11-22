@@ -5,33 +5,25 @@ import java.util.UUID;
 
 import com.irentaspro.compl.domain.model.SolicitudARCO.EstadoSolicitud;
 import com.irentaspro.compl.domain.model.SolicitudARCO.TipoSolicitud;
+import com.irentaspro.iam.infrastructure.entity.UsuarioEntity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
+@Table(name = "solicitud_arco")
 @Getter
 @Setter
-@Table(name = "solicitud_arco")
 @NoArgsConstructor
 public class SolicitudARCOEntity {
-    @Id
-    @Column(columnDefinition = "uuid")
-    private UUID id;
 
-    @Column(name = "usuario_id", columnDefinition = "uuid", nullable = false)
-    private UUID usuarioId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo_solicitud", nullable = false)
-    private TipoSolicitud tipoSolicitud; // ACCESO, RECTIFICACION, ...
+    private TipoSolicitud tipoSolicitud;
 
     private LocalDate fecha;
 
@@ -41,14 +33,12 @@ public class SolicitudARCOEntity {
     @Column(length = 4000)
     private String respuesta;
 
-    public SolicitudARCOEntity(UUID id, UUID usuarioId, TipoSolicitud tipoSolicitud, LocalDate fecha,
-            EstadoSolicitud estado, String respuesta) {
-        this.id = id;
-        this.usuarioId = usuarioId;
-        this.tipoSolicitud = tipoSolicitud;
-        this.fecha = fecha;
-        this.estado = estado;
-        this.respuesta = respuesta;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id", nullable = false)
+    private UsuarioEntity usuario;
+
+    public UUID getUsuarioId() {
+        return usuario != null ? usuario.getId() : null;
     }
 
 }

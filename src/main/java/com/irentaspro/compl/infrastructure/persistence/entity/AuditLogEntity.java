@@ -3,13 +3,8 @@ package com.irentaspro.compl.infrastructure.persistence.entity;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
 @Table(name = "audit_log")
@@ -17,7 +12,9 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class AuditLogEntity {
+
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(columnDefinition = "uuid")
     private UUID id;
 
@@ -35,17 +32,6 @@ public class AuditLogEntity {
 
     private String ip;
 
-    @Column(name = "hash_evidencia", nullable = true)
-    private String hashEvidencia; // guardamos "algoritmo:valor" (HashEvidencia.toString)
-
-    public AuditLogEntity(UUID id, UUID usuarioId, String entidad, String accion, LocalDateTime fecha, String ip,
-            String hashEvidencia) {
-        this.id = id;
-        this.usuarioId = usuarioId;
-        this.entidad = entidad;
-        this.accion = accion;
-        this.fecha = fecha;
-        this.ip = ip;
-        this.hashEvidencia = hashEvidencia;
-    }
+    @Column(name = "hash_evidencia")
+    private String hashEvidencia;
 }

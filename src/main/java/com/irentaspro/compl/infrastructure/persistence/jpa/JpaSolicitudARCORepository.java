@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.irentaspro.compl.infrastructure.persistence.entity.SolicitudARCOEntity;
 
 public interface JpaSolicitudARCORepository extends JpaRepository<SolicitudARCOEntity, UUID> {
-    List<SolicitudARCOEntity> findByUsuarioId(UUID usuarioId);
+    List<SolicitudARCOEntity> findByUsuario_Id(UUID usuarioId);
 }
