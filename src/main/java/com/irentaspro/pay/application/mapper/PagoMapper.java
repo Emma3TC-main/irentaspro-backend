@@ -11,7 +11,6 @@ public class PagoMapper {
     public static PagoDTO toDTO(Pago pago) {
         if (pago == null)
             return null;
-
         return PagoDTO.builder()
                 .id(pago.getId())
                 .contratoId(pago.getContratoId())
@@ -20,41 +19,14 @@ public class PagoMapper {
                 .moneda(pago.getMonto().moneda())
                 .metodo(pago.getMetodo())
                 .tipoPago(pago.getTipoPago())
-                .estado(pago.getEstado())
+                .estado(pago.getEstado().name())
                 .referenciaExterna(pago.getReferenciaExterna())
-                .comprobanteFiscal(
-                        pago.getComprobanteFiscal() != null
-                                ? ComprobanteFiscalDTO.builder()
-                                        .tipo(pago.getComprobanteFiscal().getTipo())
-                                        .xml(pago.getComprobanteFiscal().getXml())
-                                        .ticketSUNAT(pago.getComprobanteFiscal().getTicketSUNAT())
-                                        .build()
-                                : null)
+                .comprobanteFiscal(pago.getComprobanteFiscal() != null
+                        ? new ComprobanteFiscalDTO(
+                                pago.getComprobanteFiscal().getTipo(),
+                                pago.getComprobanteFiscal().getXml(),
+                                pago.getComprobanteFiscal().getTicketSUNAT())
+                        : null)
                 .build();
-    }
-
-    public static Pago toDomain(PagoDTO dto) {
-        if (dto == null)
-            return null;
-
-        Pago pago = new Pago(
-                dto.getContratoId(),
-                dto.getUsuarioId(),
-                new Monto(dto.getMonto(), dto.getMoneda()),
-                dto.getMetodo(),
-                dto.getTipoPago(),
-                dto.getEstado());
-
-        pago.asignarReferenciaExterna(dto.getReferenciaExterna());
-
-        if (dto.getComprobanteFiscal() != null) {
-            pago.generarComprobante(
-                    new ComprobanteFiscal(
-                            dto.getComprobanteFiscal().getTipo(),
-                            dto.getComprobanteFiscal().getXml(),
-                            dto.getComprobanteFiscal().getTicketSUNAT()));
-        }
-
-        return pago;
     }
 }

@@ -11,6 +11,7 @@ import com.irentaspro.common.domain.model.valueobjects.Monto;
 import com.irentaspro.pay.domain.gateway.PasarelaPagoGateway;
 import com.irentaspro.pay.domain.model.Pago;
 import com.irentaspro.pay.domain.model.TransaccionPSP;
+import com.irentaspro.pay.domain.model.EstadoPago;
 
 import lombok.RequiredArgsConstructor;
 
@@ -20,41 +21,42 @@ public class PagoService {
 
     private final PasarelaPagoGateway pasarelaPagoGateway;
 
+    /**
+     * Flujo: registrarLocal → llamar PSP → asignarReferenciaExterna
+     */
     public Pago iniciarPago(UUID contratoId, UUID usuarioId, Monto monto, String metodo, String tipoPago) {
-        // Llama a la pasarela (simulada o real)
-        String ref = pasarelaPagoGateway.procesarPago(monto.valor(), monto.moneda(), metodo, tipoPago);
 
-        // Crea el agregado de dominio
-        Pago pago = new Pago(contratoId, usuarioId, monto, metodo, tipoPago, "registrado");
-        pago.asignarReferenciaExterna(ref);
+        // Validación solo para pagos normales con contrato
+        if (!"MEMBRESIA_PREMIUM".equals(tipoPago) && contratoId == null) {
+            throw new IllegalArgumentException("El contrato no puede ser nulo");
+        }
+
+        // 1) Crear agregado en estado PENDIENTE
+        Pago pago = new Pago(contratoId, monto, tipoPago);
+
+        // 2) Registrar localmente (pasa a REGISTRADO)
+        pago.registrarLocal(metodo);
 
         return pago;
+    }
+
+    /**
+     * SOLO dominio: cuando la PSP confirma éxito.
+     */
+    public void confirmar(Pago pago) {
+        pago.confirmarPorPSP(pago.getUsuarioId());
     }
 
     public void conciliar(Pago pago, List<TransaccionPSP> transacciones) {
         transacciones.stream()
                 .filter(tx -> tx.getRef().equals(pago.getReferenciaExterna()))
                 .findFirst()
-                .ifPresentOrElse(tx -> {
-                    pago.confirmar(); // Cambia estado y genera evento de dominio
-                }, () -> {
-                    throw new IllegalStateException("No se encontró transacción asociada al pago: " + pago.getId());
-                });
-    }
-
-    public void confirmar(Pago pago) {
-        pago.confirmar();
+                .ifPresent(tx -> pago.conciliar(tx.getRef()));
     }
 
     public Pago crearPagoPendiente(UUID contratoId, BigDecimal monto, LocalDate fechaVencimiento) {
-
-        Monto valor = new Monto(monto, "PEN");
-
-        Pago pago = new Pago(
-                contratoId,
-                valor,
-                fechaVencimiento);
-
+        Pago pago = new Pago(contratoId, new Monto(monto, "PEN"), "PENDIENTE");
+        pago.setFechaVencimiento(fechaVencimiento);
         return pago;
     }
 

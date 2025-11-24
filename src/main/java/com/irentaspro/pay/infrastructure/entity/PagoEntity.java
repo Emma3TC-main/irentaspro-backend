@@ -15,23 +15,29 @@ import lombok.*;
 public class PagoEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(updatable = false, nullable = false)
     private UUID id;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private UUID contratoId;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private UUID usuarioId;
 
+    @Column(nullable = false)
     private BigDecimal monto;
+
+    @Column(nullable = false)
     private String moneda;
+
     private String metodo;
     private String tipoPago;
+
+    @Column(nullable = false)
     private String estado;
     private String referenciaExterna;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL, optional = true)
     @JoinColumn(name = "comprobante_id", referencedColumnName = "id")
     private ComprobanteFiscalEntity comprobanteFiscal;
 }

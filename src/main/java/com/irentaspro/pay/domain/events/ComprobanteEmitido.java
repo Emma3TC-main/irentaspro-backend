@@ -1,10 +1,8 @@
 package com.irentaspro.pay.domain.events;
 
 import java.util.UUID;
-
 import com.irentaspro.common.domain.model.DomainEvent;
 
-// Evento cuando se generó un comprobante fiscal (boleta o factura)
 public class ComprobanteEmitido extends DomainEvent {
     private final UUID pagoId;
     private final String ticketSUNAT;
@@ -22,5 +20,4 @@ public class ComprobanteEmitido extends DomainEvent {
     public String getTicketSUNAT() {
         return ticketSUNAT;
     }
-
 }

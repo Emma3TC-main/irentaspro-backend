@@ -11,14 +11,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Comando de aplicación para crear un nuevo pago.
- * 
- * Forma parte de la capa de aplicación (CQRS).
- * 
- * Este comando encapsula los datos necesarios para registrar un pago,
- * sin exponer detalles del dominio interno.
- */
 @Data
 @Builder
 @NoArgsConstructor
@@ -38,12 +30,11 @@ public class CrearPagoCommand {
     @NotBlank(message = "La moneda es obligatoria")
     private String moneda;
 
-    @NotBlank(message = "El método de pago es obligatorio (por ejemplo, 'tarjeta', 'transferencia', etc.)")
+    @NotBlank(message = "El método de pago es obligatorio (ejemplo: tarjeta, transferencia)")
     private String metodo;
 
-    @NotBlank(message = "El tipo de pago es obligatorio (por ejemplo, 'contrato', 'membresia', etc.)")
+    @NotBlank(message = "El tipo de pago es obligatorio (ejemplo: contrato, membresia)")
     private String tipoPago;
 
-    // Opcional: referencia externa del PSP (si el flujo inicia desde el PSP)
-    private String referenciaExterna;
+    private String referenciaExterna; // opcional
 }

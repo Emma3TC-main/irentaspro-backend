@@ -3,55 +3,59 @@ package com.irentaspro.pay.infrastructure.adapters.out.api;
 import java.util.Map;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.irentaspro.pay.domain.model.Pago;
+import com.irentaspro.pay.domain.repository.PagoRepositorio;
 import com.irentaspro.pay.domain.services.PSP_ACL;
+import com.irentaspro.pay.domain.services.PagoService;
+import com.irentaspro.pay.infrastructure.adapters.out.gateway.PaypalGatewayAdapter;
+
+import lombok.RequiredArgsConstructor;
 
 /**
- * Adaptador concreto que implementa la comunicación con el Proveedor de
- * Servicios de Pago (PSP). Actúa como un puerto de salida (adapter out).
- *
- * Simula el envío y recepción de información entre el dominio
- * y un servicio externo (como Stripe, Niubiz, etc.).
+ * Implementación concreta del adaptador PSP.
+ * PSP_ACL debe ser un bean para facilitar testing/configuración.
  */
 @Component
+@RequiredArgsConstructor
 public class PSPAdapterImpl implements IPSPAdapter {
 
-    private final PSP_ACL acl = new PSP_ACL();
+    private static final Logger log = LoggerFactory.getLogger(PSPAdapterImpl.class);
 
-    /**
-     * Inicia un pago a través del PSP, traduciendo el modelo del dominio
-     * al formato requerido por el proveedor.
-     *
-     * @param pago instancia del dominio que representa el pago a procesar
-     * @return mapa con los datos simulados devueltos por el PSP (status, ref)
-     */
+    private final PagoRepositorio pagoRepositorio;
+    private final PagoService pagoService;
+    private final PaypalGatewayAdapter paypalGateway;
+
+    @Override
     public Map<String, Object> iniciarPago(Pago pago) {
-        Map<String, Object> solicitud = acl.traducirSolicitud(pago);
-
-        // Simulación: envío de la solicitud al PSP externo
-        System.out.println("[PSPAdapter] Enviando solicitud de pago al PSP...");
-        System.out.println("[PSPAdapter] Payload: " + solicitud);
-
-        // Simulación: respuesta del PSP
-        String ref = UUID.randomUUID().toString();
-        Map<String, Object> respuesta = Map.of(
-                "status", "ok",
-                "ref", ref);
-
-        System.out.println("[PSPAdapter] PSP respondió: " + respuesta);
-        return respuesta;
+        return Map.of(); // Ahora solo manejamos pago vía PayPal directamente en handler
     }
 
-    /**
-     * Procesa un webhook recibido del PSP y lo adapta al lenguaje del dominio.
-     *
-     * @param payload datos crudos enviados por el PSP (generalmente en JSON)
-     */
     @Override
     public void webhook(Map<String, Object> payload) {
-        System.out.println("[PSPAdapter] Recibiendo webhook del PSP...");
-        acl.mapearRespuesta(payload);
+        log.info("[PSPAdapter] Webhook recibido: {}", payload);
+
+        // Extraemos orderId de PayPal
+        String orderId = (String) payload.get("resource.id");
+        String status = (String) payload.get("resource.status");
+
+        if (orderId == null) {
+            log.error("Webhook PayPal sin orderId");
+            return;
+        }
+
+        Pago pago = pagoRepositorio.buscarPorReferenciaExterna(orderId)
+                .orElseThrow(() -> new IllegalStateException("Pago no encontrado para referencia " + orderId));
+
+        if ("COMPLETED".equalsIgnoreCase(status)) {
+            pagoService.confirmar(pago);
+            pagoRepositorio.guardar(pago);
+            log.info("Pago confirmado por webhook PayPal: {}", pago.getId());
+        } else {
+            log.warn("Pago PayPal con status no completado: {}", status);
+        }
     }
 }

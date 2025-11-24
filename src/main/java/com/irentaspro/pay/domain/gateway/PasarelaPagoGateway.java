@@ -4,9 +4,8 @@ import java.math.BigDecimal;
 
 public interface PasarelaPagoGateway {
     /**
-     * Procesa un pago en el PSP (ej. PayPal)
-     * 
-     * @return referencia o ID de transacción
+     * Procesa un pago en el PSP (ej. PayPal) y devuelve una referencia/ID (p. ej.
+     * orderId).
      */
     String procesarPago(BigDecimal monto, String moneda, String metodo, String referencia);
 }

@@ -6,13 +6,17 @@ import com.irentaspro.pay.domain.model.Pago;
 import com.irentaspro.pay.domain.model.TransaccionPSP;
 
 public class ConciliacionService {
+
+    /**
+     * Conciliación por lote: marca CONCILIADO a los pagos que tengan referencia
+     * coincidente en la lista de transacciones.
+     */
     public void conciliarPagos(List<Pago> pagos, List<TransaccionPSP> transacciones) {
         for (Pago p : pagos) {
-            boolean match = transacciones.stream()
-                    .anyMatch(t -> t.getRef().equals(p.getReferenciaExterna()));
-            if (match) {
-                p.conciliar(); // dispara un PagoConciliado
-            }
+            transacciones.stream()
+                    .filter(t -> t.getRef().equals(p.getReferenciaExterna()))
+                    .findFirst()
+                    .ifPresent(tx -> p.conciliar(tx.getRef()));
         }
     }
 }

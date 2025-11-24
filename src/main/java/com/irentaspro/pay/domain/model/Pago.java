@@ -2,7 +2,6 @@ package com.irentaspro.pay.domain.model;
 
 import java.time.LocalDate;
 import java.util.UUID;
-
 import com.irentaspro.common.domain.model.AggregateRoot;
 import com.irentaspro.common.domain.model.valueobjects.Monto;
 import com.irentaspro.pay.domain.events.ComprobanteEmitido;
@@ -10,40 +9,38 @@ import com.irentaspro.pay.domain.events.PagoConciliado;
 import com.irentaspro.pay.domain.events.PagoConfirmado;
 
 /**
- * Entidad de dominio: Pago
- * Representa un pago asociado a un contrato o membresía.
- * Implementa la lógica de negocio y emite eventos de dominio.
+ * Aggregate root: Pago
+ * - usa EstadoPago (enum)
+ * - usuarioId puede ser nulo en PENDIENTE hasta recibir confirmación PSP
+ * - el dominio no llama a PSP: las llamadas externas se hacen en Application
+ * layer
  */
 public class Pago extends AggregateRoot {
 
     private UUID contratoId;
-    private UUID usuarioId;
+    private UUID usuarioId; // puede ser null en PENDIENTE
     private Monto monto;
     private String metodo;
-    private String tipoPago; // contrato | membresia | otro
-    private String estado;
+    private String tipoPago;
+    private EstadoPago estado;
     private String referenciaExterna;
     private ComprobanteFiscal comprobanteFiscal;
-
     private LocalDate fechaVencimiento;
 
-    // --- Constructores de dominio ---
-    public Pago(UUID contratoId, UUID usuarioId, Monto monto, String metodo, String tipoPago, String estado) {
+    // Constructor principal
+    public Pago(UUID contratoId, Monto monto, String tipoPago) {
         this.id = UUID.randomUUID();
         this.contratoId = contratoId;
-        this.usuarioId = usuarioId;
         this.monto = monto;
-        this.metodo = metodo;
         this.tipoPago = tipoPago;
-        this.estado = estado;
-        this.validarInvariantes();
+        this.metodo = null;
+        this.estado = EstadoPago.PENDIENTE;
+        validarInvariantes();
     }
 
-    /**
-     * Constructor completo utilizado al rehidratar desde persistencia.
-     */
-    public Pago(UUID id, UUID contratoId, UUID usuarioId, Monto monto,
-            String metodo, String tipoPago, String estado, String referenciaExterna) {
+    // Constructor completo para rehidratación
+    public Pago(UUID id, UUID contratoId, UUID usuarioId, Monto monto, String metodo, String tipoPago,
+            EstadoPago estado, String referenciaExterna) {
         this.id = id;
         this.contratoId = contratoId;
         this.usuarioId = usuarioId;
@@ -52,64 +49,59 @@ public class Pago extends AggregateRoot {
         this.tipoPago = tipoPago;
         this.estado = estado;
         this.referenciaExterna = referenciaExterna;
-        this.validarInvariantes();
-    }
-
-    /**
-     * Constructor para pagos pendientes
-     */
-    public Pago(UUID contratoId,
-            Monto monto,
-            LocalDate fechaVencimiento) {
-
-        this.id = UUID.randomUUID();
-        this.contratoId = contratoId;
-        this.monto = monto;
-        this.metodo = "ALQUILER";
-        this.tipoPago = "PENDIENTE";
-        this.estado = "PENDIENTE";
-        this.fechaVencimiento = fechaVencimiento;
         validarInvariantes();
     }
 
-    /**
-     * Constructor protegido vacío para frameworks ORM.
-     */
     protected Pago() {
     }
 
-    // --- Lógica de negocio ---
-    public void registrar() {
-        if (monto == null || monto.valor().doubleValue() <= 0)
-            throw new IllegalArgumentException("El monto debe ser positivo.");
-        this.estado = "registrado";
+    // --- Operaciones de dominio ---
+
+    public void registrarLocal(String metodo) {
+        if (this.estado != EstadoPago.PENDIENTE) {
+            throw new IllegalStateException("Sólo se puede registrar un pago en estado PENDIENTE.");
+        }
+        this.metodo = metodo;
+        this.estado = EstadoPago.REGISTRADO;
     }
 
-    public void confirmar() {
-        if (!"registrado".equalsIgnoreCase(this.estado))
-            throw new IllegalStateException("El pago debe estar registrado antes de confirmarse.");
-        this.estado = "confirmado";
+    public void asignarReferenciaExterna(String ref) {
+        if (ref == null || ref.isBlank()) {
+            throw new IllegalArgumentException("Referencia externa inválida.");
+        }
+        this.referenciaExterna = ref;
+    }
+
+    public void confirmarPorPSP(UUID usuarioId) {
+        if (this.estado != EstadoPago.REGISTRADO && this.estado != EstadoPago.PENDIENTE) {
+            throw new IllegalStateException("El pago debe estar REGISTRADO o PENDIENTE para confirmarse.");
+        }
+        this.usuarioId = usuarioId != null ? usuarioId : this.usuarioId;
+        this.estado = EstadoPago.CONFIRMADO;
         this.registrarEvento(new PagoConfirmado(this.getId(), this.usuarioId, this.tipoPago));
     }
 
+    public void conciliar(String referenciaExternaConfirmada) {
+        if (this.estado != EstadoPago.CONFIRMADO) {
+            throw new IllegalStateException("Sólo pagos CONFIRMADOS pueden conciliarse.");
+        }
+        if (referenciaExternaConfirmada == null || referenciaExternaConfirmada.isBlank())
+            throw new IllegalArgumentException("Referencia externa para conciliación inválida.");
+        this.referenciaExterna = referenciaExternaConfirmada;
+        this.estado = EstadoPago.CONCILIADO;
+        this.registrarEvento(new PagoConciliado(this.getId(), this.referenciaExterna));
+    }
+
     public void generarComprobante(ComprobanteFiscal cf) {
-        if (!"confirmado".equalsIgnoreCase(this.estado))
-            throw new IllegalStateException("Debe confirmarse el pago antes de generar un comprobante.");
+        if (this.estado != EstadoPago.CONCILIADO && this.estado != EstadoPago.CONFIRMADO) {
+            throw new IllegalStateException("Debe estar CONCILIADO o CONFIRMADO para generar comprobante.");
+        }
         this.comprobanteFiscal = cf;
         this.registrarEvento(new ComprobanteEmitido(this.getId(), cf.getTicketSUNAT()));
     }
 
-    public void conciliar() {
-        if (!"confirmado".equalsIgnoreCase(this.estado))
-            throw new IllegalStateException("El pago debe estar confirmado antes de conciliarse.");
-        this.estado = "conciliado";
-        this.registrarEvento(new PagoConciliado(this.getId(), this.referenciaExterna));
-    }
-
-    // Método helper para verificar estado
-
     public boolean estaConfirmado() {
-        return "confirmado".equalsIgnoreCase(this.estado);
+        return this.estado == EstadoPago.CONFIRMADO || this.estado == EstadoPago.CONCILIADO;
     }
 
     // --- Getters ---
@@ -133,7 +125,7 @@ public class Pago extends AggregateRoot {
         return tipoPago;
     }
 
-    public String getEstado() {
+    public EstadoPago getEstado() {
         return estado;
     }
 
@@ -145,26 +137,36 @@ public class Pago extends AggregateRoot {
         return comprobanteFiscal;
     }
 
-    // --- Setters controlados ---
-    public void asignarReferenciaExterna(String ref) {
-        this.referenciaExterna = ref;
+    public LocalDate getFechaVencimiento() {
+        return fechaVencimiento;
+    }
+
+    // Solo para rehidratación desde el repositorio
+    public void setComprobanteFiscal(ComprobanteFiscal cf) {
+        this.comprobanteFiscal = cf;
+    }
+
+    // Para generar las cuotas de pago
+
+    public void setFechaVencimiento(LocalDate fecha) {
+        this.fechaVencimiento = fecha;
     }
 
     @Override
     public void validarInvariantes() {
-        if (contratoId == null)
+        if (!"MEMBRESIA_PREMIUM".equals(tipoPago) && contratoId == null)
             throw new IllegalArgumentException("El contrato no puede ser nulo.");
 
         if (monto == null)
             throw new IllegalArgumentException("El monto no puede ser nulo.");
-
         if (estado == null)
             throw new IllegalArgumentException("El estado no puede ser nulo.");
-
-        // Solo pagos registrados/confirmados requieren usuarioId
-        if ((estado.equals("registrado") || estado.equals("confirmado"))
-                && usuarioId == null)
-            throw new IllegalArgumentException(
-                    "Los pagos registrados o confirmados deben tener usuario asignado.");
+        if ((estado == EstadoPago.REGISTRADO || estado == EstadoPago.CONFIRMADO) && usuarioId == null) {
+            // permitir null, se asigna al confirmar por PSP
+        }
+        if (estado == EstadoPago.REGISTRADO && (metodo == null || metodo.isBlank())) {
+            throw new IllegalArgumentException("El método de pago es obligatorio cuando está REGISTRADO.");
+        }
     }
+
 }

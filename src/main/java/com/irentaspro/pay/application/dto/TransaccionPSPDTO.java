@@ -14,5 +14,5 @@ import lombok.NoArgsConstructor;
 public class TransaccionPSPDTO {
     private String provider;
     private String ref;
-    private Map<String, Object> payload; // Datos crudos del proveedor de pagos (PSP)
+    private Map<String, Object> payload; // Map para mantener la estructura
 }

@@ -3,11 +3,9 @@ package com.irentaspro.pay.application.command.handler;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.irentaspro.common.domain.model.valueobjects.Monto;
 import com.irentaspro.pay.application.command.IniciarPagoCommand;
-import com.irentaspro.pay.domain.model.Pago;
-import com.irentaspro.pay.domain.repository.PagoRepositorio;
-import com.irentaspro.pay.domain.services.PagoService;
+import com.irentaspro.pay.application.dto.PagoDTO;
+import com.irentaspro.pay.application.service.PagoApplicationService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -16,25 +14,25 @@ import lombok.RequiredArgsConstructor;
 @Transactional
 public class IniciarPagoCommandHandler {
 
-    private final PagoRepositorio pagoRepositorio;
-    private final PagoService pagoService;
+    private final PagoApplicationService pagoApplicationService;
 
+    /**
+     * Retorna la referencia de PayPal si corresponde.
+     */
     public String handle(IniciarPagoCommand command) {
-        // Crear valor objeto de monto
-        Monto monto = new Monto(command.getMonto(), command.getMoneda());
+        PagoDTO dto = PagoDTO.builder()
+                .contratoId(command.getContratoId())
+                .usuarioId(command.getUsuarioId())
+                .monto(command.getMonto())
+                .moneda(command.getMoneda())
+                .metodo(command.getMetodo())
+                .tipoPago(command.getTipoPago())
+                .build();
 
-        // Lógica principal
-        Pago pago = pagoService.iniciarPago(
-                command.getContratoId(),
-                command.getUsuarioId(),
-                monto,
-                command.getMetodo(),
-                command.getTipoPago());
+        // Registrar pago y obtener DTO
+        PagoDTO registrado = pagoApplicationService.registrarPago(dto);
 
-        // Guardar en base de datos
-        pagoRepositorio.guardar(pago);
-
-        // Retornar la referencia externa (id Paypal)
-        return pago.getReferenciaExterna();
+        // Retornar la referencia externa si es PayPal
+        return registrado.getReferenciaExterna();
     }
 }

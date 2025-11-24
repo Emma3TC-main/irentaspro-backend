@@ -45,4 +45,22 @@ public class AuthController {
         UsuarioDTO dto = authApplicationService.obtenerUsuarioPorEmail(email);
         return ResponseEntity.ok(dto);
     }
+
+    /** Upgrade de cuenta a PREMIUM */
+
+    @PutMapping("/upgrade")
+    public ResponseEntity<?> upgradeCuenta(
+            org.springframework.security.core.Authentication authentication) {
+
+        if (authentication == null) {
+            return ResponseEntity.status(401).body("No autenticado");
+        }
+
+        String email = (String) authentication.getPrincipal();
+
+        authApplicationService.upgradeCuenta(email);
+
+        return ResponseEntity.ok("Cuenta actualizada a PREMIUM");
+    }
+
 }

@@ -25,33 +25,38 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-            .csrf(csrf -> csrf.disable())
-            .httpBasic(b -> b.disable())
-            .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .csrf(csrf -> csrf.disable())
+                .httpBasic(b -> b.disable())
+                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-            .authorizeHttpRequests(auth -> auth
-                // 🔓 Login / Registro
-                .requestMatchers("/api/auth/**").permitAll()
+                .authorizeHttpRequests(auth -> auth
+                        // 🔓 Login / Register público
+                        .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
 
-                // 🔓 Propiedades públicas (FREE users ven propiedades)
-                .requestMatchers(HttpMethod.GET, "/api/propiedades/**").permitAll()
+                        // 🔐 /me requiere token
+                        .requestMatchers(HttpMethod.GET, "/api/auth/me").authenticated()
 
-                // 🔐 Cualquier POST/PUT/DELETE en propiedades requiere token (modo PREMIUM)
-                .requestMatchers(HttpMethod.POST, "/api/propiedades/**").authenticated()
-                .requestMatchers(HttpMethod.PUT, "/api/propiedades/**").authenticated()
-                .requestMatchers(HttpMethod.DELETE, "/api/propiedades/**").authenticated()
+                        // 🔐 upgrade requiere token
+                        .requestMatchers(HttpMethod.PUT, "/api/auth/upgrade").authenticated()
 
-                // 🔐 Todo lo demás requiere autenticación
-                .anyRequest().authenticated()
-            )
+                        // 🔓 propiedades GET públicas
+                        .requestMatchers(HttpMethod.GET, "/api/propiedades/**").permitAll()
 
-            .cors(c -> {}) // habilitar CORS
+                        // 🔐 POST/PUT/DELETE requieren token
+                        .requestMatchers(HttpMethod.POST, "/api/propiedades/**").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/propiedades/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/propiedades/**").authenticated()
 
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                        // 🔐 cualquier otra ruta requiere autenticación
+                        .anyRequest().authenticated())
+
+                .cors(c -> {
+                }) // habilitar CORS
+
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
-
 
     @Bean
     public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {

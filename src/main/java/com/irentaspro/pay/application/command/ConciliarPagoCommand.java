@@ -12,5 +12,5 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class ConciliarPagoCommand {
-    List<TransaccionPSP> transacciones;
+    private List<TransaccionPSP> transacciones;
 }

@@ -2,25 +2,19 @@ package com.irentaspro.pay.domain.model;
 
 import java.util.Map;
 import java.util.UUID;
-
 import com.irentaspro.common.domain.model.Entidad;
 
-/**
- * Representa una transacción procesada por un Proveedor de Servicios de Pago
- * (PSP),
- * como PayPal, Stripe, Culqi, MercadoPago, etc.
- */
 public class TransaccionPSP extends Entidad {
 
-    private final String provider; // Nombre del PSP (ej. "Stripe", "Culqi")
-    private final String ref; // Identificador externo del PSP
-    private final Map<String, Object> payload; // Datos crudos devueltos por el PSP
+    private final String provider;
+    private final String ref;
+    private final Map<String, Object> payload;
 
     public TransaccionPSP(String provider, String ref, Map<String, Object> payload) {
         super();
         this.provider = provider;
         this.ref = ref;
-        this.payload = payload;
+        this.payload = payload != null ? payload : Map.of();
         validarInvariantes();
     }
 
@@ -28,7 +22,7 @@ public class TransaccionPSP extends Entidad {
         super(id);
         this.provider = provider;
         this.ref = ref;
-        this.payload = payload;
+        this.payload = payload != null ? payload : Map.of();
         validarInvariantes();
     }
 
@@ -46,11 +40,9 @@ public class TransaccionPSP extends Entidad {
 
     @Override
     public void validarInvariantes() {
-        if (provider == null || provider.isBlank()) {
-            throw new IllegalArgumentException("El proveedor de pago (provider) no puede estar vacío.");
-        }
-        if (ref == null || ref.isBlank()) {
-            throw new IllegalArgumentException("La referencia externa (ref) es obligatoria.");
-        }
+        if (provider == null || provider.isBlank())
+            throw new IllegalArgumentException("Provider obligatorio.");
+        if (ref == null || ref.isBlank())
+            throw new IllegalArgumentException("Ref obligatorio.");
     }
 }

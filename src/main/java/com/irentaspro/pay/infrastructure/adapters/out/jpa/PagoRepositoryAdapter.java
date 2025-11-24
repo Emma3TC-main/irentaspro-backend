@@ -8,28 +8,28 @@ import org.springframework.stereotype.Component;
 
 import com.irentaspro.common.domain.model.valueobjects.Monto;
 import com.irentaspro.pay.domain.model.ComprobanteFiscal;
+import com.irentaspro.pay.domain.model.EstadoPago;
 import com.irentaspro.pay.domain.model.Pago;
 import com.irentaspro.pay.domain.repository.PagoRepositorio;
 import com.irentaspro.pay.infrastructure.entity.ComprobanteFiscalEntity;
 import com.irentaspro.pay.infrastructure.entity.PagoEntity;
 import com.irentaspro.pay.infrastructure.repository.JpaPagoRepository;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 
-/**
- * Adaptador que implementa el puerto de salida PagoRepositorio.
- * Convierte entre el modelo de dominio Pago y la entidad persistente
- * PagoEntity.
- */
 @Component
 @RequiredArgsConstructor
 public class PagoRepositoryAdapter implements PagoRepositorio {
 
     private final JpaPagoRepository jpaRepo;
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     @Override
     public Pago guardar(Pago pago) {
-        // Convertir ComprobanteFiscal de dominio a entidad
         ComprobanteFiscalEntity cfEntity = null;
         if (pago.getComprobanteFiscal() != null) {
             cfEntity = ComprobanteFiscalEntity.builder()
@@ -40,7 +40,6 @@ public class PagoRepositoryAdapter implements PagoRepositorio {
                     .build();
         }
 
-        // Construir entidad de pago
         PagoEntity entity = PagoEntity.builder()
                 .id(pago.getId() != null ? pago.getId() : UUID.randomUUID())
                 .contratoId(pago.getContratoId())
@@ -49,14 +48,12 @@ public class PagoRepositoryAdapter implements PagoRepositorio {
                 .moneda(pago.getMonto().moneda())
                 .metodo(pago.getMetodo())
                 .tipoPago(pago.getTipoPago())
-                .estado(pago.getEstado())
+                .estado(pago.getEstado().name())
                 .referenciaExterna(pago.getReferenciaExterna())
                 .comprobanteFiscal(cfEntity)
                 .build();
 
-        // Persistir y reconstruir el objeto de dominio actualizado
         PagoEntity saved = jpaRepo.save(entity);
-
         return mapToDomain(saved);
     }
 
@@ -74,13 +71,15 @@ public class PagoRepositoryAdapter implements PagoRepositorio {
 
     @Override
     public List<Pago> buscarTodos() {
-        return jpaRepo.findAll()
-                .stream()
-                .map(this::mapToDomain)
-                .toList();
+        return jpaRepo.findAll().stream().map(this::mapToDomain).toList();
     }
 
-    // --- Métodos auxiliares ---
+    @Override
+    public Optional<Pago> buscarPorReferenciaExterna(String ref) {
+        return jpaRepo.findByReferenciaExterna(ref).map(this::mapToDomain);
+    }
+
+
     private Pago mapToDomain(PagoEntity e) {
         ComprobanteFiscal cf = null;
         if (e.getComprobanteFiscal() != null) {
@@ -91,6 +90,8 @@ public class PagoRepositoryAdapter implements PagoRepositorio {
                     e.getComprobanteFiscal().getTicketSUNAT());
         }
 
+        EstadoPago estadoPago = EstadoPago.valueOf(e.getEstado());
+
         Pago pago = new Pago(
                 e.getId(),
                 e.getContratoId(),
@@ -98,11 +99,11 @@ public class PagoRepositoryAdapter implements PagoRepositorio {
                 new Monto(e.getMonto(), e.getMoneda()),
                 e.getMetodo(),
                 e.getTipoPago(),
-                e.getEstado(),
+                estadoPago,
                 e.getReferenciaExterna());
 
         if (cf != null) {
-            pago.generarComprobante(cf);
+            pago.setComprobanteFiscal(cf);
         }
 
         return pago;

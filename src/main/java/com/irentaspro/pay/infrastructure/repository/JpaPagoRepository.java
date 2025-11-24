@@ -1,5 +1,6 @@
 package com.irentaspro.pay.infrastructure.repository;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,5 +10,5 @@ import com.irentaspro.pay.infrastructure.entity.PagoEntity;
 
 @Repository
 public interface JpaPagoRepository extends JpaRepository<PagoEntity, UUID> {
-
+    Optional<PagoEntity> findByReferenciaExterna(String ref);
 }

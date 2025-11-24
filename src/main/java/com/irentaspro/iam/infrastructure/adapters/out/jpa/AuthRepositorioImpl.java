@@ -25,15 +25,23 @@ public class AuthRepositorioImpl implements IAuthRepositorio {
 
     @Override
     public Usuario guardar(Usuario usuario) {
-        UsuarioEntity entity = UsuarioEntity.builder()
-                .nombre(usuario.getNombre())
-                .email(usuario.getEmail().getValor())
-                .passwordHash(usuario.getPasswordHash().getValor())
-                .tipoCuenta(usuario.getTipoCuenta())
-                .fechaVencimiento(usuario.getFechaVencimiento())
-                .build();
+        UsuarioEntity entity;
+
+        if (usuario.getId() != null) {
+            entity = jpaRepository.findById(usuario.getId())
+                    .orElse(new UsuarioEntity());
+        } else {
+            entity = new UsuarioEntity();
+        }
+
+        entity.setNombre(usuario.getNombre());
+        entity.setEmail(usuario.getEmail().getValor());
+        entity.setPasswordHash(usuario.getPasswordHash().getValor());
+        entity.setTipoCuenta(usuario.getTipoCuenta());
+        entity.setFechaVencimiento(usuario.getFechaVencimiento());
 
         jpaRepository.save(entity);
+
         usuario.setId(entity.getId());
         return usuario;
     }

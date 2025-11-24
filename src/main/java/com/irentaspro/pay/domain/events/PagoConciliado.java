@@ -1,10 +1,8 @@
 package com.irentaspro.pay.domain.events;
 
 import java.util.UUID;
-
 import com.irentaspro.common.domain.model.DomainEvent;
 
-// Evento cuando el pago fue conciliado con la pasarela PSP
 public class PagoConciliado extends DomainEvent {
     private final UUID pagoId;
     private final String referenciaExterna;
@@ -22,5 +20,4 @@ public class PagoConciliado extends DomainEvent {
     public String getReferenciaExterna() {
         return referenciaExterna;
     }
-
 }

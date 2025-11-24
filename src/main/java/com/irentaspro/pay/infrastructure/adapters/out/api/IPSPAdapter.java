@@ -5,28 +5,22 @@ import java.util.Map;
 import com.irentaspro.pay.domain.model.Pago;
 
 /**
- * Puerto de salida que define las operaciones que un adaptador PSP debe
- * ofrecer.
- * 
- * Implementa el principio de Inversión de Dependencias (DIP) dentro de la
- * arquitectura
- * hexagonal, permitiendo intercambiar proveedores de pago sin afectar el
- * dominio.
+ * Puerto de salida para adaptadores de PSP.
  */
 public interface IPSPAdapter {
 
     /**
      * Inicia un pago con el PSP externo.
-     *
-     * @param pago objeto del dominio a traducir y enviar
-     * @return respuesta del PSP (generalmente un mapa de datos)
+     * 
+     * @param pago objeto del dominio
+     * @return respuesta del PSP (mapa)
      */
     Map<String, Object> iniciarPago(Pago pago);
 
     /**
-     * Procesa un webhook recibido del PSP (confirmación, error, etc.).
+     * Procesa un webhook recibido del PSP.
      *
-     * @param payload datos del evento en formato clave-valor
+     * @param payload datos del evento
      */
     void webhook(Map<String, Object> payload);
 }

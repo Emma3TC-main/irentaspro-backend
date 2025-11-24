@@ -8,7 +8,6 @@ import com.irentaspro.common.domain.model.Repositorio;
 import com.irentaspro.pay.domain.model.Pago;
 
 public interface PagoRepositorio extends Repositorio<Pago> {
-
     @Override
     Pago guardar(Pago pago);
 
@@ -21,6 +20,6 @@ public interface PagoRepositorio extends Repositorio<Pago> {
     @Override
     List<Pago> buscarTodos();
 
-    // Métodos adicionales específicos del dominio PAY
-    // Optional<Pago> buscarPorReferencia(String referencia);
+    // Opcional: buscar por referencia externa
+    Optional<Pago> buscarPorReferenciaExterna(String referencia);
 }
